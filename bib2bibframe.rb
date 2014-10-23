@@ -16,7 +16,7 @@ config = YAML.load_file('conf.yml')
 puts config
 if (! File.directory?(config['datadir']))
   Dir.mkdir(config['datadir'])
-  log << "Created ata directory #{config['datadir']}."
+  log << "Created data directory #{config['datadir']}."
 end
 if (! File.directory?(config['logdir']))
   Dir.mkdir(config['logdir'])
