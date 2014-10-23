@@ -13,7 +13,6 @@ log = []
 
 # Process configuration file
 config = YAML.load_file('conf.yml')
-puts config
 if (! File.directory?(config['datadir']))
   Dir.mkdir(config['datadir'])
   log << "Created data directory #{config['datadir']}."
@@ -78,7 +77,7 @@ datadir = File.join(config['datadir'], datetime)
 Dir.mkdir(datadir)
 xmldir = File.join(datadir, 'marcxml') 
 Dir.mkdir(xmldir)
-rdfdir = File.join(datadir, 'rdf')
+rdfdir = File.join(datadir, 'bibframe')
 Dir.mkdir(rdfdir)
 
 
@@ -86,6 +85,18 @@ Dir.mkdir(rdfdir)
 bibids = options[:bibids].split(%r{,\s*|\n})
 
 
+# Set bibframe file extension based on serialization
+rdfext = '.' +
+  case options[:format]
+    when 'rdfxml', 'rdfxml-raw'
+      'rdf'
+    when 'json', 'extendedJSON'
+      'json'
+    when 'ntriples',
+      'nt'
+  end
+  
+        
 # Process the conversions
 id_count = 0
 records = []
@@ -118,9 +129,9 @@ bibids.each do |id|
   marcxml = `echo "#{marcxml}" | xmllint --format -`
   
   xmlfile = File.join(xmldir, id + '.xml')
-  File.write(xmlfile, marcxml)
-
-  rdffile = File.join(rdfdir, id + '.rdf')
+  File.write(xmlfile, marcxml)      
+  
+  rdffile = File.join(rdfdir, id + rdfext)
   system("java -cp #{config['saxon']} net.sf.saxon.Query #{config['xquery']} marcxmluri=#{xmlfile} baseuri=#{baseuri} serialization=#{options[:format]} > #{rdffile}")
   # log << "Wrote bibframe for bib id #{id}."
 
