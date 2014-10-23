@@ -1,5 +1,6 @@
-bib2bibframe
-============
+# bib2bibframe #
+
+## Overview ##
 
 Tool to convert Cornell bibliographic IDs to Bibframe RDF.
 
@@ -9,7 +10,8 @@ Output: MARCXML and Bibframe
 The MARCXML is retrieved from the Cornell Library database. The Bibframe RDF is
 generated using the LC Bibframe converter.
 
-CONFIGURATION
+
+## Configuration ##
 
 To configure the script, copy example_conf.yml to conf.yml. Specify the 
 following:
@@ -30,7 +32,7 @@ the xml and rdf output files, respectively.
 can be overwritten by an option passed to the script.
 
 
-RUNTIME OPTIONS
+## Runtime options ##
 
 --baseuri - optional. Overrides configuration file setting.
 
@@ -46,8 +48,7 @@ Values supported by Bibframe converter:
 
 
 Example commands:
-$ ./bib2bibframe.rb --baseuri=http://example.com --format=json ids="102063,
-1413966,152071"
+$ ./bib2bibframe.rb --baseuri=http://example.com --format=json ids=102063,1413966,152071
 
 
 
