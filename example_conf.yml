@@ -1,7 +1,7 @@
 # Configuration options for bib2bibframe.rb
 
 # Default namespace for minting URIs; may be overwritten by a runtime option
-baseuri: http://localhost:8080/vitro/individual/
+baseuri: http://example.library.cornell.edu/vitro/individual/
 
 # Directory to which data is written
 datadir: /usr/local/bib2bibframe/data
