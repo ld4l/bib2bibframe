@@ -5,11 +5,14 @@
 require 'optparse'
 require 'yaml'
 
+
 def sg_or_pl(string, count)
   count.to_s + ' ' + string + (count == 1 ? '' : 's')
 end
 
+
 log = []
+
 
 # Process configuration file
 config = YAML.load_file('conf.yml')
@@ -23,7 +26,6 @@ if (! File.directory?(config['logdir']))
 end
 
 
-
 # Assign default options
 options = {
   # Serializations supported by bibframe converter: 
@@ -32,6 +34,7 @@ options = {
   # ntriples, json, exhibitJSON
   :format => 'rdfxml',
 }
+
 
 # Parse options
 OptionParser.new do |opts|
@@ -49,16 +52,6 @@ OptionParser.new do |opts|
   opts.on('--ids', '=MANDATORY', String, 'Comma- or newline-separated list of bib ids') do |ids|
     options[:bibids] = ids
   end  
-    
-  # Moved to config file
-  # opts.on('--saxon', '=MANDATORY', String, 'Path to Saxon engine') do |s|
-  #   options['saxon'] = s
-  # end
-  
-  # Moved to config file
-  # opts.on('--xquery', '=MANDATORY', String, 'Path to XQuery') do |x|
-  #  options['xquery'] = x
-  # end 
   
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts
@@ -66,6 +59,7 @@ OptionParser.new do |opts|
   end
   
 end.parse!
+
 
 # baseuri option overwrites config setting
 baseuri = options.has_key?(:baseuri) ? options[:baseuri] : config['baseuri']
@@ -80,10 +74,8 @@ Dir.mkdir(xmldir)
 rdfdir = File.join(datadir, 'bibframe')
 Dir.mkdir(rdfdir)
 
-
 # Allow either comma- or newline-delimited list of bibids 
 bibids = options[:bibids].split(%r{,\s*|\n})
-
 
 # Set bibframe file extension based on serialization
 rdfext = '.' +
@@ -96,7 +88,7 @@ rdfext = '.' +
       'nt'
   end
   
-        
+    
 # Process the conversions
 id_count = 0
 records = []
@@ -129,14 +121,21 @@ bibids.each do |id|
   marcxml = `echo "#{marcxml}" | xmllint --format -`
   
   xmlfile = File.join(xmldir, id + '.xml')
-  File.write(xmlfile, marcxml)      
+  File.write(xmlfile, marcxml)     
   
+  lib = File.join(Dir.pwd, '/lib')
+  saxon = File.join(lib, '/saxon/saxon9he.jar')
+  xquery = File.join(lib, '/marc2bibframe/xbin/saxon.xqy') 
+ 
   rdffile = File.join(rdfdir, id + rdfext)
-  system("java -cp #{config['saxon']} net.sf.saxon.Query #{config['xquery']} marcxmluri=#{xmlfile} baseuri=#{baseuri} serialization=#{options[:format]} > #{rdffile}")
-  # log << "Wrote bibframe for bib id #{id}."
-
+  
+  command = "java -cp #{saxon} net.sf.saxon.Query #{xquery} marcxmluri=#{xmlfile} baseuri=#{baseuri} serialization=#{options[:format]} > #{rdffile}"
+  system(command)
+  
   # TODO - for app - return the marcxml and bibframe to the application 
+  
 end
+
 
 # Write the log
 log << [

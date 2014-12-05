@@ -1,18 +1,11 @@
 # Configuration options for bib2bibframe.rb
 
+# Default namespace for minting URIs; may be overwritten by a runtime option
+baseuri: http://localhost:8080/vitro/individual/
+
 # Directory to which data is written
 datadir: /usr/local/bib2bibframe/data
 
 # Log directory
 logdir: /usr/local/bib2bibframe/logs
-
-# Absolute path to Saxon engine
-saxon: /usr/local/saxon/saxon9he.jar
-
-# Absolute path to XQuery
-xquery: /usr/local/marc2bibframe/xbin/saxon.xqy
-
-# Default namespace for minting URIs; may be overwritten by a runtime option
-baseuri: http://localhost:8080/vitro/individual/
-
 
