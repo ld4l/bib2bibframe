@@ -92,7 +92,7 @@ rdfext = '.' +
 # Process the conversions
 id_count = 0
 records = []
-no_record = []
+no_records = []
 
 bibids.each do |id|
 
@@ -102,7 +102,7 @@ bibids.each do |id|
   marcxml = `curl -s http://newcatalog.library.cornell.edu/catalog/#{id}.marcxml`
   if (! marcxml.start_with?("<record"))
     # log << "WARNING: No record found for bib id #{id}."
-    no_record << id
+    no_records << id
     next
   end
 
@@ -122,29 +122,39 @@ bibids.each do |id|
   
   xmlfile = File.join(xmldir, id + '.xml')
   File.write(xmlfile, marcxml)     
-  
-  lib = File.join(Dir.pwd, '/lib')
-  saxon = File.join(lib, '/saxon/saxon9he.jar')
-  xquery = File.join(lib, '/marc2bibframe/xbin/saxon.xqy') 
- 
+
   rdffile = File.join(rdfdir, id + rdfext)
-  
+    
+  saxon = File.join('lib', 'saxon', 'saxon9he.jar')
+  xquery = File.join('lib', 'marc2bibframe', 'xbin', 'saxon.xqy') 
+
   command = "java -cp #{saxon} net.sf.saxon.Query #{xquery} marcxmluri=#{xmlfile} baseuri=#{baseuri} serialization=#{options[:format]} > #{rdffile}"
   system(command)
   
   # TODO - for app - return the marcxml and bibframe to the application 
+  # Make a config option, so don't maintain 2 versions of the script?
   
 end
 
 
 # Write the log
-log << [
-        "#{sg_or_pl('bib id', id_count)} processed.",        
-        "#{sg_or_pl('record', records.length)} found and converted to bibframe: " + records.join(', ') + '.',
-        "#{sg_or_pl('bib id', no_record.length)} with no corresponding bib record: " + no_record.join(', ') + '.',
-       ]
+totals_log = "#{sg_or_pl('bib id', id_count)} processed."
+
+records_log = "#{sg_or_pl('record', records.length)} found and converted to bibframe"
+if records.length > 0
+  records_log << ': ' + records.join(', ')
+end
+records_log << '.'
+
+no_records_log = "#{sg_or_pl('bib id', no_records.length)} without a corresponding bib record"
+if no_records.length > 0
+  no_records_log << ': ' + no_records.join(', ')
+end
+no_records_log << '.'
+
+log << [ totals_log, records_log, no_records_log ]
 
 logfile = File.join(config['logdir'], datetime + '.log')
-File.open(logfile, "w") do |file|
+File.open(logfile, 'w') do |file|
   log.each { |line| file.puts line }
 end
