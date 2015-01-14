@@ -2,7 +2,7 @@
 
 ## Overview ##
 
-Tool to convert Cornell bibliographic IDs to Bibframe RDF.
+Commandline tool to convert Cornell bibliographic IDs to Bibframe RDF.
 
 **Script name**: bib2bibframe.rb  
 **Input**: a comma-delimited list of bib record ids   
@@ -51,7 +51,7 @@ Values supported by Bibframe converter:
 
 
 
-Example commands:  
+**Example commands:**
 $ ./bib2bibframe.rb --ids=102063,1413966,152071    
 $ ./bib2bibframe.rb --baseuri=http://example.com --format=json --ids=102063,1413966,152071
 
