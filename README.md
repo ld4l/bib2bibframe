@@ -5,8 +5,8 @@
 Tool to convert Cornell bibliographic IDs to Bibframe RDF.
 
 **Script name**: bib2bibframe.rb  
-**Input**: a comma-delimited list of bib record ids 
-**Output**: MARCXML and Bibframe 
+**Input**: a comma-delimited list of bib record ids   
+**Output**: MARCXML and Bibframe RDF files
 
 The MARCXML is retrieved from the Cornell Library database. The Bibframe RDF is
 generated using the LC Bibframe converter.
