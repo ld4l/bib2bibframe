@@ -1,10 +1,10 @@
-# bib2bibframe #
+# bib2bibframe-converter #
 
 ## Overview ##
 
 Tool to convert Cornell bibliographic IDs to Bibframe RDF.
 
-Input: a comma- or newline delimited list of Cornell bib ids
+Input: a comma-, pipe- or newline-delimited list of Cornell bib ids
 Output: MARCXML and Bibframe 
 
 The MARCXML is retrieved from the Cornell Library database. The Bibframe RDF is
@@ -46,9 +46,11 @@ Values supported by Bibframe converter:
 
 **--ids** - required. Comma- or newline-delimited list of Cornell bib ids.
 
+**--baseuri** - required. Base for minting entity URIs.
+
 
 Example commands:
-$ ./bib2bibframe.rb --baseuri=http://example.com --format=json ids=102063,1413966,152071
+$ ./bib2bibframe.rb --baseuri=http://example.com --format=json --ids=102063,1413966,152071
 
 
 
