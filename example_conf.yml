@@ -1,7 +1,12 @@
 # Configuration options for bib2bibframe.rb
 
-# Default namespace for minting URIs; may be overwritten by a runtime option
+# Default namespace for minting URIs; may be overwritten by a runtime option.
 baseuri: http://example.library.cornell.edu/vitro/individual/
+
+# Library catalog URL. The catalog is assumed to support use of the .marcxml 
+# extension to request marcxml. A future update will include marc2marcxml 
+# conversion if the catalog doesn't support this.
+catalog: http://newcatalog.library.cornell.edu/catalog
 
 # Directory to which data is written
 datadir: /usr/local/bib2bibframe/data

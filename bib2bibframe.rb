@@ -31,8 +31,8 @@ OptionParser.new do |opts|
     options[:format] = f
   end  
 
-  opts.on('--ids', '=MANDATORY', String, 'Comma-, pipe-, or newline-separated list of bib ids') do |ids|
-    options[:bibids] = ids.split(%r{,\s*|\n})
+  opts.on('--ids', '=MANDATORY', String, 'Comma-separated list of bib ids') do |ids|
+    options[:bibids] = ids.split(',')
   end  
   
   opts.on_tail('-h', '--help', 'Show this message') do

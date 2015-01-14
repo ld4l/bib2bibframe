@@ -16,6 +16,13 @@ generated using the LC Bibframe converter.
 To configure the script, copy example_conf.yml to conf.yml. Specify the 
 following:
 
+- **baseuri**: Namespace the Bibframe converter will use to mint URIs; can be
+overwritten by a runtime option.
+
+- **catalog**: Catalog URL. The catalog is assumed to support use of the 
+.marcxml extension to request marcxml. A future update will include marc2marcxml 
+conversion if the catalog doesn't support this.
+
 - **datadir**: Directory to which MARCXML and Bibframe files are written. The
 application will create this directory if it doesn't already exist. Each time 
 the script runs, it will use the current datetime to create a subdirectory of 
@@ -24,15 +31,10 @@ the xml and rdf output files, respectively.
 
 - **logdir**: Directory to which runtime logs are written.
 
-- **saxon**: Absolute, local path to Saxon engine.
-
-- **xquery**: Absolute, local path to XQuery.
-
-- **baseuri**: Namespace the Bibframe converter will use to mint URIs. This value
-can be overwritten by an option passed to the script.
-
 
 ## Runtime options ##
+
+**--ids** - required. Comma-delimited list of Cornell bib ids.
 
 **--baseuri** - optional. Overrides configuration file setting.
 
@@ -42,14 +44,11 @@ Values supported by Bibframe converter:
 - *rdfxml-raw*: verbose, cascaded output
 - *ntriples*
 - *json*
-- *exhibitJSON*
 
-**--ids** - required. Comma- or newline-delimited list of Cornell bib ids.
-
-**--baseuri** - required. Base for minting entity URIs.
 
 
 Example commands:
+$ ./bib2bibframe.rb --ids=102063,1413966,152071
 $ ./bib2bibframe.rb --baseuri=http://example.com --format=json --ids=102063,1413966,152071
 
 
