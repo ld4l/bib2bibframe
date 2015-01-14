@@ -12,6 +12,10 @@ DEFAULTS = {
   # rdfxml-raw: verbose, cascaded output
   # ntriples, json, exhibitJSON
   :format => 'rdfxml',  
+  
+  # If not specified in config file
+  :datadir => File.join(Dir.pwd, 'data'),
+  :logdir => File.join(Dir.pwd, 'log'),
 }
 
 config = YAML.load_file(File.join(Dir.pwd, 'conf.yml'))

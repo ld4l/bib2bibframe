@@ -72,7 +72,7 @@ class Converter
   private
 
     def create_data_directories
-   
+
       if (! File.directory?(@datadir) )
         FileUtils.makedirs @datadir
         @log[:message] << "Created data directory #{@datadir}."
