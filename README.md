@@ -48,7 +48,7 @@ Values supported by Bibframe converter:
 
 
 Example commands:
-$ ./bib2bibframe.rb --ids=102063,1413966,152071
+$ ./bib2bibframe.rb --ids=102063,1413966,152071    
 $ ./bib2bibframe.rb --baseuri=http://example.com --format=json --ids=102063,1413966,152071
 
 
