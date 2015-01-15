@@ -28,16 +28,11 @@ class Converter
     create_data_directories
   end
 
-  def convert
-
-    # Process the conversions
-    @bibids.each do |id|
-      xmlfile = bibid_to_marcxml id  
-      if xmlfile     
-        marcxml_to_bibframe id, xmlfile
-      end
-    end    
+  def convert  
+    #@batch ? convert_batch : convert_singles
+    convert_singles
   end
+
 
   # Write the log to file
   def log
@@ -59,7 +54,6 @@ class Converter
     @log[:message] << [ totals_log, records_log, no_records_log ]
     
     if (! File.directory?(@logdir) )
-      puts 'creating logdir ' + @logdir
       Dir.mkdir @logdir
       @log[:message] << "Created log directory #{@logdir}."
     end
@@ -99,11 +93,82 @@ class Converter
           else 'rdf' # shouldn't get here
         end
     end
+
+    def convert_singles 
+      @bibids.each do |id|
+        xmlfilename = bibid_to_marcxml id  
+        if xmlfilename     
+          marcxml_to_bibframe id, xmlfilename
+        end
+      end
+    end
     
+    def convert_batch
+      xmlfilename = bibids_to_marcxml
+      if xmlfilename
+        marcxml_to_bibframe 'batch', xmlfilename  
+      end
+    end
+    
+    def bibids_to_marcxml 
+      marcxml = ''
+
+      # Concatenate the marcxml for each id
+      @bibids.each do |id|
+        marcxml << get_marcxml(id)
+      end
+      
+      puts marcxml
+      
+      if ! marcxml.empty?
+        basename = 'batch'
+        marcxml = marcxml_records_to_collection marcxml  
+        xmlfilename = write_marcxml marcxml, basename 
+        marcxml_to_bibframe basename, xmlfilename
+      end
+      
+    end
+    
+    # Write marcxml to file
+    def write_marcxml marcxml, basename
+      xmlfilename = File.join(@xmldir, basename + '.xml')
+      File.open(xmlfilename, 'w') { |file| file.write marcxml }    
+      xmlfilename
+    end
+    
+    def get_marcxml id
+
+      # Retrieve the marcxml from the catalog.
+      marcxml_url = File.join(@catalog, id + '.marcxml')      
+      marcxml = `curl -s #{marcxml_url}`
+      
+      if (! marcxml.start_with?("<record"))
+        @log[:no_records] << id
+        return ''
+      end
+  
+      @log[:records] << id      
+      marcxml
+    end
+    
+    def marcxml_records_to_collection marcxml
+    
+      # Wrap in <collection> tag. Doesn't make any difference in the bibframe of 
+      # a single record, but is needed to process multiple records into a single 
+      # file, so just add it generally.
+      marcxml = marcxml.gsub(/<record xmlns='http:\/\/www.loc.gov\/MARC21\/slim'>/, '<record>')
+      marcxml = 
+        "<?xml version='1.0' encoding='UTF-8'?><collection xmlns='http://www.loc.gov/MARC21/slim'>" + marcxml + '</collection>'
+  
+      # Pretty print the unformatted marcxml for display purposes
+      marcxml = `echo "#{marcxml}" | xmllint --format -` 
+    end 
+           
     # Get marcxml for the bibid and write to a file
     def bibid_to_marcxml id
     
-      # Retrieve the marcxml from the Voyager catalog. Include timestamp.
+      # TODO Replace with call to get_marcxml
+      # Retrieve the marcxml from the catalog.
       marcxml_url = File.join(@catalog, id + '.marcxml')
       marcxml = `curl -s #{marcxml_url}`
       if (! marcxml.start_with?("<record"))
@@ -112,30 +177,32 @@ class Converter
       end
   
       @log[:records] << id
-  
+ 
+      # TODO Replace with call to marcxml_records_to_collection
       # Wrap in <collection> tag. Doesn't make any difference in the bibframe of 
       # a single record, but is needed to process multiple records into a single 
       # file, so just add it generally.
-      marcxml = marcxml.gsub(/<record xmlns='http:\/\/www.loc.gov\/MARC21\/slim'>/,
+      marcxml = marcxml.gsub(/<record xmlns='http:\/\/www.loc.gov\/MARC21\/slim'>/, '')
+      marcxml = 
         "<?xml version='1.0' encoding='UTF-8'?><collection xmlns='http://www.loc.gov/MARC21/slim'>\n
-        <record>") 
+        <record>" + marcxml 
       marcxml << '</collection>'
   
       # Pretty print the unformatted marcxml for display purposes
-      marcxml = `echo "#{marcxml}" | xmllint --format -`       
-      # puts marcxml 
+      marcxml = `echo "#{marcxml}" | xmllint --format -`        
       
+      # TODO Replace with write_marcxml
       # Write marcxml to file
-      xmlfile = File.join(@xmldir, id + '.xml')
-      File.open(xmlfile, 'w') { |file| file.write marcxml }
+      xmlfilename = File.join(@xmldir, id + '.xml')
+      File.open(xmlfilename, 'w') { |file| file.write marcxml }
       
-      return xmlfile
+      return xmlfilename
     end
 
     # Convert marcxml for the id to bibframe rdf and write to file
-    def marcxml_to_bibframe id, xmlfile
-      rdffile = File.join(@rdfdir, id + @rdfext)  
-      @bibframe = `java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfile} baseuri=#{@baseuri} serialization=#{@format} > #{rdffile}`
+    def marcxml_to_bibframe basename, xmlfilename
+      rdffile = File.join(@rdfdir, basename + @rdfext)  
+      `java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} > #{rdffile}`
     end
     
     def sg_or_pl(string, count)
