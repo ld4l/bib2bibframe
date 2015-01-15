@@ -65,7 +65,10 @@ class Converter
     end
     
     File.open(@logfile, 'w') do |file|
-      @log[:message].each { |line| file.puts line }
+      @log[:message].each do |line| 
+        puts line
+        file.puts line  
+      end
     end 
   end
     

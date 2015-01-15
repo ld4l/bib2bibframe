@@ -41,7 +41,8 @@ of the data directory, with further subdirectories marcxml and bibframe to store
 the xml and rdf output files, respectively. The bibframe directory is further
 partitioned by format.
 
-- **logdir:** Directory to which runtime logs are written. 
+- **logdir:** Directory to which runtime logs are written. *Note:* these log
+messages are also written to $stdout.
 
 
 ## Runtime arguments ##
