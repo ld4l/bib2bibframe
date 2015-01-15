@@ -26,28 +26,35 @@ OptionParser.new do |opts|
 
   opts.banner = 'Usage: bib2bibframe [options]'
 
-  opts.on('--ids', '=MANDATORY', String, 'Comma-separated list of bib ids.') do |ids|
-    options[:bibids] = ids.split(',')
+  opts.on('--ids', '=MANDATORY', String, 'Comma-separated list of bib ids OR the string "file:" followed by the path to a file containing a newline-delimited list of bib ids.') do |arg|
+    if arg.start_with?('file:')
+      file = File.new arg[5..-1]
+      ids = []
+      file.each { |line| ids << line.chomp }
+    else
+      ids = arg.split(',')
+    end
+    options[:bibids] = ids
   end  
 
-  opts.on('--catalog', '=[OPTIONAL]', String, 'Library catalog from which to retrieve; overrides configuration setting.') do |f|
-    options[:catalog] = f
+  opts.on('--catalog', '=[OPTIONAL]', String, 'Library catalog from which to retrieve; overrides configuration setting.') do |arg|
+    options[:catalog] = arg
   end
      
-  opts.on('--baseuri', '=[OPTIONAL]', String, 'Namespace for minting URIs; overrides configuration setting.') do |b|
-    options[:baseuri] = b
+  opts.on('--baseuri', '=[OPTIONAL]', String, 'Namespace for minting URIs; overrides configuration setting.') do |arg|
+    options[:baseuri] = arg
   end 
 
-  opts.on('--format', '=[OPTIONAL]', String, 'RDF serialization; overrides configuration setting. Options: rdfxml, rdfxml-raw, ntriples, json. Defaults to rdfxml.') do |f|
-    options[:format] = f
+  opts.on('--format', '=[OPTIONAL]', String, 'RDF serialization; overrides configuration setting. Options: rdfxml, rdfxml-raw, ntriples, json. Defaults to rdfxml.') do |arg|
+    options[:format] = arg
   end   
   
-  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to ./log.') do |f|
-    options[:datadir] = f
+  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to ./log.') do |arg|
+    options[:datadir] = arg
   end  
 
-  opts.on('--logdir', '=[OPTIONAL]', String, 'Directory for storing log files; overrides configuration setting; defaults to ./log.') do |f|
-    options[:logdir] = f
+  opts.on('--logdir', '=[OPTIONAL]', String, 'Directory for storing log files; overrides configuration setting; defaults to ./log.') do |arg|
+    options[:logdir] = arg
   end  
   
   opts.on_tail('-h', '--help', 'Show this message') do
