@@ -89,14 +89,11 @@ class Converter
       # Set bibframe file extension based on serialization format
       return '.' +
         case @format
-          when 'rdfxml', 'rdfxml-raw'
-            'rdf'
-          when 'json'
-            'json'
-          when 'ntriples',
-            'nt'
-          when 'turtle',
-            'ttl'
+          when 'rdfxml', 'rdfxml-raw' then 'rdf'
+          when 'json' then 'js'
+          when 'ntriples' then 'nt'
+          # when 'turtle' then 'ttl'
+          else 'rdf' # shouldn't get here
         end
     end
     
@@ -113,9 +110,9 @@ class Converter
   
       @log[:records] << id
   
-      # Wrap in <collection> tag. Doesn't make any difference in the bibframe of a
-      # single record, but is needed to process multiple records into a single file,
-      # so just add it generally.
+      # Wrap in <collection> tag. Doesn't make any difference in the bibframe of 
+      # a single record, but is needed to process multiple records into a single 
+      # file, so just add it generally.
       marcxml = marcxml.gsub(/<record xmlns='http:\/\/www.loc.gov\/MARC21\/slim'>/,
         "<?xml version='1.0' encoding='UTF-8'?><collection xmlns='http://www.loc.gov/MARC21/slim'>\n
         <record>") 

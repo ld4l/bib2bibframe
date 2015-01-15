@@ -1,16 +1,24 @@
 # Configuration options for bib2bibframe.rb
 
-# Default namespace for minting URIs; may be overwritten by a runtime option.
+# Default namespace for minting URIs. Optional: may be overridden by a 
+# commandline argument.
 baseuri: http://library.example.edu/individual/
 
-# Library catalog URL. The catalog is assumed to support use of the .marcxml 
-# extension to request marcxml. A future update will include marc2marcxml 
-# conversion if the catalog doesn't support this.
-catalog: http://newcatalog.library.cornell.edu/catalog
+# Library catalog URL. Optional: may be overridden by a commandline argument.
+# The catalog is assumed to support use of the .marcxml extension to request 
+# marcxml. A future update will include marc2marcxml conversion if the catalog 
+# doesn't support this.
+catalog: http://search.library.cornell.edu
 
-# Directory to which data is written. Optional: defaults to ./data.
-# datadir: /usr/local/bib2bibframe/data
+# Serialization format. Optional: may be overridden by a commandline argument.
+# Defaults to rdfxml.
+format: rdfxml
 
-# Log directory. Optional: defaults to ./log.
-# logdir: /usr/local/bib2bibframe/log
+# Directory to which data is written. Optional: commandline argument overrides
+# this setting. In the absence of both, defaults to ./data.
+datadir: /usr/local/bib2bibframe-converter/data
+
+# Log directory. Optional: commandline argument overrides this setting. In the 
+# absence of both, defaults to ./log.
+logdir: /usr/local/bib2bibframe-converter/log
 
