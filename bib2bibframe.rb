@@ -6,22 +6,19 @@ require_relative 'converter'
 require 'optparse'
 require 'yaml'
   
-# Default values, if not specified in config file or on commandline. (Not all
-# options have defaults - e.g., bibids and catalog.
+# Default values if not specified in config file or on commandline
 DEFAULTS = {
   # Serializations supported by bibframe converter: 
   # rdfxml: (default) flattened RDF/XML, everything has an identifier
   # rdfxml-raw: verbose, cascaded output
   # ntriples, json, exhibitJSON
   :format => 'rdfxml',  
-  :batch => false,
   :datadir => File.join(Dir.pwd, 'data'),
   :logdir => File.join(Dir.pwd, 'log'),
 }
 
 config = YAML.load_file(File.join(Dir.pwd, 'conf.yml'))
 
-# Commandline values will overwrite the defaults.
 options = DEFAULTS
 
 # Parse options
@@ -37,7 +34,7 @@ OptionParser.new do |opts|
     else
       ids = arg.split(',')
     end
-    options[:bibids] = ids 
+    options[:bibids] = ids
   end  
 
   opts.on('--catalog', '=[OPTIONAL]', String, 'Library catalog from which to retrieve; overrides configuration setting.') do |arg|
@@ -52,11 +49,7 @@ OptionParser.new do |opts|
     options[:format] = arg
   end   
   
-  opts.on('--batch', '', nil, 'Convert all records together to a single file, rather than separately to individual files.') do
-    options[:batch] = true
-  end  
-   
-  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to ./data.') do |arg|
+  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to ./log.') do |arg|
     options[:datadir] = arg
   end  
 
@@ -71,13 +64,11 @@ OptionParser.new do |opts|
   
 end.parse!
   
-# Commandline arguments take precedence over config settings.
+# Commandline options take precedence over default options and config settings.
 config.merge! options
 
 # Symbolize keys
 config = config.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-
-# config.each { |k,v| puts "#{k}: #{v}" }
 
 converter = Converter.new(config)
 converter.convert
