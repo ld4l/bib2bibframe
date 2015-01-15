@@ -47,12 +47,15 @@ messages are also written to $stdout.
 
 ## Runtime arguments ##
 
-Bib ids must be specified on the commandline. All other arguments are optional,
-and can be specified in the config file rather than the commandline. See above
-for descriptions of these arguments.
+Bib ids and processing mode must be specified on the commandline. All other 
+arguments are optional, and can be specified in the config file rather than the 
+commandline. See above for descriptions of these arguments.
 
 **--ids:** Comma-delimited list of Cornell bib ids **or** 'file:' followed by 
 the relative path to a newline-delimited file of bib ids.
+
+**--batch:** Convert all records in batch to a single file, rather than
+individually to separate files.  
 
 See the corresponding config file options for description of the following:
 
@@ -77,6 +80,7 @@ the format and content of any specified values.
 
 ## Sample commands ##
 $ ./bib2bibframe.rb --ids=102063,1413966,152071 
+$ ./bib2bibframe.rb --ids=102063,1413966,152071 --batch
 $ ./bib2bibframe.rb --ids=file:/usr/local/bibids.txt  
 $ ./bib2bibframe.rb --baseuri=http://example.com --format=json --ids=102063,1413966,152071
 
