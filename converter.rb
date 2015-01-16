@@ -36,8 +36,7 @@ class Converter
   end
 
   def convert  
-    #@batch ? convert_batch : convert_singles
-    convert_singles
+    @batch ? convert_batch : convert_singles
   end
 
 
@@ -46,7 +45,7 @@ class Converter
       
     totals_log = "#{sg_or_pl('bib id', @bibids.length)} processed."
     
-    records_log = "#{sg_or_pl('record', @log[:records].length)} found and converted to bibframe"
+    records_log = sg_or_pl('record', @log[:records].length) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe'
     if @log[:records].length > 0
       records_log << ': ' + @log[:records].join(', ')
     end
@@ -112,13 +111,13 @@ class Converter
       @bibids.each do |id|
         marcxml << get_marcxml(id)
       end
-      
+          
       if ! marcxml.empty?
         marcxml = marcxml_records_to_collection marcxml  
         xmlfilename = write_marcxml marcxml, 'batch' 
-        marcxml_to_bibframe xmlfilename
       end
-      
+
+      xmlfilename 
     end
     
     # Write marcxml to file
