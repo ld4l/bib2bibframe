@@ -2,6 +2,15 @@ require 'fileutils'
 
 class Converter
 
+  EXTENSIONS = {
+    'marcxml' => '.xml',
+    'rdfxml' => '.rdf',
+    'rdfxml-raw' => '.rdf',
+    'json' => '.js',
+    'ntriples' => '.nt',
+    # 'turtle' => '.ttl',
+  }
+
   # Set variables and create directories common to all bibids in the conversion
   # request
   def initialize config
@@ -13,8 +22,6 @@ class Converter
       :records => [],
       :no_records => [],
     }  
-
-    @rdfext = get_rdf_ext 
       
     datetime = Time.now.strftime('%Y%m%d-%H%M%S')
     @logfile = File.join(@logdir, datetime + '.log')
@@ -81,18 +88,6 @@ class Converter
       @rdfdir = File.join(@datadir, 'bibframe', @format)
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
     end
-    
-    def get_rdf_ext
-      # Set bibframe file extension based on serialization format
-      return '.' +
-        case @format
-          when 'rdfxml', 'rdfxml-raw' then 'rdf'
-          when 'json' then 'js'
-          when 'ntriples' then 'nt'
-          # when 'turtle' then 'ttl'
-          else 'rdf' # shouldn't get here
-        end
-    end
 
     def convert_singles 
       @bibids.each do |id|
@@ -118,20 +113,17 @@ class Converter
         marcxml << get_marcxml(id)
       end
       
-      puts marcxml
-      
       if ! marcxml.empty?
-        basename = 'batch'
         marcxml = marcxml_records_to_collection marcxml  
-        xmlfilename = write_marcxml marcxml, basename 
-        marcxml_to_bibframe basename, xmlfilename
+        xmlfilename = write_marcxml marcxml, 'batch' 
+        marcxml_to_bibframe xmlfilename
       end
       
     end
     
     # Write marcxml to file
     def write_marcxml marcxml, basename
-      xmlfilename = File.join(@xmldir, basename + '.xml')
+      xmlfilename = File.join(@xmldir, basename + EXTENSIONS['marcxml'])
       File.open(xmlfilename, 'w') { |file| file.write marcxml }    
       xmlfilename
     end
@@ -177,7 +169,7 @@ class Converter
 
     # Convert marcxml for the id to bibframe rdf and write to file
     def marcxml_to_bibframe xmlfilename
-      rdffile = File.join(@rdfdir, File.basename(xmlfilename, File.extname(xmlfilename)) + @rdfext)  
+      rdffile = File.join(@rdfdir, File.basename(xmlfilename, EXTENSIONS['marcxml']) + EXTENSIONS[@format])
       `java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} > #{rdffile}`
     end
     
