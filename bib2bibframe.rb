@@ -29,11 +29,17 @@ OptionParser.new do |opts|
 
   opts.banner = 'Usage: bib2bibframe [options]'
 
-  opts.on('--ids', '=MANDATORY', String, 'Comma-separated list of bib ids OR the string "file:" followed by the path to a file containing a newline-delimited list of bib ids.') do |arg|
+  opts.on('--ids', '=MANDATORY', String, 'Comma-separated list of bib ids OR the string "file:" followed by the path to a file containing a newline-delimited list of bib ids. The file may contain comment lines prefixed with #.') do |arg|
     if arg.start_with?('file:')
       file = File.new arg[5..-1]
       ids = []
-      file.each { |line| ids << line.chomp }
+      file.each do |line| 
+        # Ignore comments and blank lines
+        line.chomp!
+        next if line.empty? || line[0] == '#'
+        ids << line
+      end
+      puts ids.inspect
     else
       ids = arg.split(',')
     end
@@ -56,7 +62,7 @@ OptionParser.new do |opts|
     options[:batch] = true
   end  
    
-  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to ./log.') do |arg|
+  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to ./data.') do |arg|
     options[:datadir] = arg
   end  
 
