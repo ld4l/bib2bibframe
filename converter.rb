@@ -2,7 +2,7 @@ require 'fileutils'
 
 class Converter
 
-  EXTENSIONS = {
+  FILE_EXTENSIONS = {
     'marcxml' => '.xml',
     'rdfxml' => '.rdf',
     'rdfxml-raw' => '.rdf',
@@ -122,7 +122,7 @@ class Converter
     
     # Write marcxml to file
     def write_marcxml marcxml, basename
-      xmlfilename = File.join(@xmldir, basename + EXTENSIONS['marcxml'])
+      xmlfilename = File.join(@xmldir, basename + FILE_EXTENSIONS['marcxml'])
       File.open(xmlfilename, 'w') { |file| file.write marcxml }    
       xmlfilename
     end
@@ -168,7 +168,7 @@ class Converter
 
     # Convert marcxml for the id to bibframe rdf and write to file
     def marcxml_to_bibframe xmlfilename
-      rdffile = File.join(@rdfdir, File.basename(xmlfilename, EXTENSIONS['marcxml']) + EXTENSIONS[@format])
+      rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
       `java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} > #{rdffile}`
     end
     
