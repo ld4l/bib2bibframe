@@ -60,7 +60,7 @@ class Converter
     @log[:message] << [ totals_log, records_log, no_records_log ]
     
     if (! File.directory?(@logdir) )
-      Dir.mkdir @logdir
+      FileUtils.makedirs @logdir
       @log[:message] << "Created log directory #{@logdir}."
     end
     

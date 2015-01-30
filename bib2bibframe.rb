@@ -6,23 +6,31 @@ require_relative 'converter'
 require 'optparse'
 require 'yaml'
   
-# Default values, if not specified in config file or on commandline. (Not all
-# options have defaults - e.g., bibids and catalog.
+# Default values of options, if not specified in config file or on commandline. 
+# (Not all options have defaults - e.g., bibids and catalog.)
 DEFAULTS = {
+  :batch => false,
+  :conf_file => File.join(File.dirname(__FILE__), 'conf', 'conf.yml'),
+  :datadir => File.join(Dir.pwd, 'data'),
   # Serializations supported by bibframe converter: 
   # rdfxml: (default) flattened RDF/XML, everything has an identifier
   # rdfxml-raw: verbose, cascaded output
   # ntriples, json, exhibitJSON
   :format => 'rdfxml',  
-  :batch => false,
-  :datadir => File.join(Dir.pwd, 'data'),
   :logdir => File.join(Dir.pwd, 'log'),
 }
 
-config = YAML.load_file(File.join(Dir.pwd, 'conf.yml'))
-
 # Commandline values override the defaults.
 options = DEFAULTS
+
+# Get user-specified conf file before parsing other options, so the commandline
+# options will override default values.
+OptionParser.new do |opts|
+  opts.on('--conf', '=[OPTIONAL]', String, 'Configuration file path (directory and filename). Defaults to conf/conf.yml relative to this script.') do |arg|
+    options[:conf_file] = arg
+  end
+end
+conf = YAML.load_file options[:conf_file] 
 
 # Parse options
 OptionParser.new do |opts|
@@ -46,25 +54,25 @@ OptionParser.new do |opts|
     options[:bibids] = ids 
   end  
 
-  opts.on('--catalog', '=[OPTIONAL]', String, 'Library catalog from which to retrieve; overrides configuration setting.') do |arg|
-    options[:catalog] = arg
-  end
-     
   opts.on('--baseuri', '=[OPTIONAL]', String, 'Namespace for minting URIs; overrides configuration setting.') do |arg|
     options[:baseuri] = arg
   end 
 
-  opts.on('--format', '=[OPTIONAL]', String, 'RDF serialization; overrides configuration setting. Options: rdfxml, rdfxml-raw, ntriples, json. Defaults to rdfxml.') do |arg|
-    options[:format] = arg
-  end   
-  
   opts.on('--batch', '', nil, 'Converts all records together to a single file, rather than separately to individual files.') do
     options[:batch] = true
   end  
-   
+    
+  opts.on('--catalog', '=[OPTIONAL]', String, 'Library catalog from which to retrieve; overrides configuration setting.') do |arg|
+    options[:catalog] = arg
+  end
+
   opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to ./data.') do |arg|
     options[:datadir] = arg
-  end  
+  end 
+  
+  opts.on('--format', '=[OPTIONAL]', String, 'RDF serialization; overrides configuration setting. Options: rdfxml, rdfxml-raw, ntriples, json. Defaults to rdfxml.') do |arg|
+    options[:format] = arg
+  end   
 
   opts.on('--logdir', '=[OPTIONAL]', String, 'Directory for storing log files; overrides configuration setting; defaults to ./log.') do |arg|
     options[:logdir] = arg
@@ -76,16 +84,17 @@ OptionParser.new do |opts|
   end
   
 end.parse!
-  
+
+
 # Commandline arguments take precedence over config settings.
-config.merge! options
+conf.merge! options
 
 # Symbolize keys
-config = config.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
+conf = conf.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
 
-# config.each { |k,v| puts "#{k}: #{v}" }
+# conf.each { |k,v| puts "#{k}: #{v}" }
 
-converter = Converter.new(config)
+converter = Converter.new(conf)
 converter.convert
 converter.log
 

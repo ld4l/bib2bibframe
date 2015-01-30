@@ -54,6 +54,8 @@ for descriptions of these arguments.
 **--ids:** Comma-delimited list of Cornell bib ids **or** 'file:' followed by 
 the relative path to a newline-delimited file of bib ids.
 
+**--conf:** Path (including filename) to configuration file.
+
 See the corresponding config file options for description of the following:
 
 **--baseuri**   
@@ -67,6 +69,7 @@ See the corresponding config file options for description of the following:
 The ids, baseuri and catalog arguments have no programmatic default values. The 
 other arguments have the following defaults:
 
+**conf_file:** conf/conf.yml, relative to the current script
 **format:** rdfxml  
 **datadir:** ./data  
 **logdir:** ./log  
