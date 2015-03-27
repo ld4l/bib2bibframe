@@ -12,15 +12,16 @@ catalog: http://newcatalog.library.cornell.edu/catalog
 
 # Serialization format. Optional: may be overridden by a commandline argument.
 # Defaults to rdfxml.
-format: turtle
+# format: turtle
 
 # Directory to which data is written. Optional: commandline argument overrides
-# this setting. In the absence of both, defaults to ./data.
+# this setting. In the absence of both, defaults to data subdirectory of
+# current working directory.
 # datadir: /usr/local/bib2bibframe/data
 
 # Log directory. Optional: commandline argument overrides this setting. In the 
-# absence of both, defaults to ./log.
-# logdir: /Users/rjy7/Workspace/bib2bibframe-converter/log
+# absence of both, defaults to log subdirectory of current working directory.
+# logdir: /usr/local/bib2bibframe/log
 
 
 

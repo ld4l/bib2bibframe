@@ -27,8 +27,8 @@ class Converter
     @logfile = File.join(@logdir, datetime + '.log')
     @datadir = File.join(@datadir, datetime)      
     
-    @saxon = File.join('lib', 'saxon', 'saxon9he.jar')
-    @xquery = File.join('lib', 'marc2bibframe', 'xbin', 'saxon.xqy') 
+    @saxon = File.join(File.dirname(__FILE__), 'lib', 'saxon', 'saxon9he.jar')
+    @xquery = File.join(File.dirname(__FILE__), 'lib', 'marc2bibframe', 'xbin', 'saxon.xqy') 
     # Non-rdfxml formats require this additional parameter to the LC converter
     @method = (@format == 'ntriples' || @format == 'json') ? "!method=text" : ''
     
@@ -39,16 +39,17 @@ class Converter
     @batch ? convert_batch : convert_singles
   end
 
-
   # Write the log to file
   def log
       
     totals_log = "#{sg_or_pl('bib id', @bibids.length)} processed."
     
     records_log = sg_or_pl('record', @log[:records].length) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe'
-    if @log[:records].length > 0
-      records_log << ': ' + @log[:records].join(', ')
-    end
+    # On a large scale we wouldn't want this. Can just inspect the no_records
+    # log to determine what was not successfully converted.
+    # if @log[:records].length > 0
+    #   records_log << ': ' + @log[:records].join(', ')
+    # end
     records_log << '.'
     
     no_records_log = "#{sg_or_pl('id', @log[:no_records].length)} without a bib record"
@@ -138,8 +139,10 @@ class Converter
         return ''
       end
   
-      @log[:records] << id      
-      marcxml
+      @log[:records] << id    
+        
+      # Pretty print the unformatted marcxml for display purposes
+      marcxml = `echo "#{marcxml}" | xmllint --format -` 
     end
     
     def marcxml_records_to_collection marcxml
@@ -147,12 +150,15 @@ class Converter
       # Wrap in <collection> tag. Doesn't make any difference in the bibframe of 
       # a single record, but is needed to process multiple records into a single 
       # file, so just add it generally.
-      marcxml = marcxml.gsub(/<record xmlns='http:\/\/www.loc.gov\/MARC21\/slim'>/, '<record>')
+      marcxml = marcxml.gsub(/<\?xml version=['"]1.0['"]\?>/, '')
+      marcxml = marcxml.gsub(/<record xmlns=['"]http:\/\/www.loc.gov\/MARC21\/slim['"]>/, '<record>')
       marcxml = 
         "<?xml version='1.0' encoding='UTF-8'?><collection xmlns='http://www.loc.gov/MARC21/slim'>" + marcxml + '</collection>'
   
+      # Exceeds xmllint's capacity when large number of records are processed
+      # in batch. Apply to individual records instead.
       # Pretty print the unformatted marcxml for display purposes
-      marcxml = `echo "#{marcxml}" | xmllint --format -` 
+      # marcxml = `cat #{marcxml} | xmllint --format -` 
     end 
            
     # Get marcxml for the bibid and write to a file
