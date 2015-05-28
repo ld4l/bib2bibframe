@@ -78,9 +78,9 @@ conf.merge! conf_file_settings
 # Commandline arguments take precedence.
 conf.merge! options
 
-
-if conf[:bibids].start_with?('file:')
-  file = File.new conf[:bibids][5..-1]
+bibids = conf[:bibids]
+if bibids.start_with?('file:')
+  file = File.new bibids[5..-1]
   bibids = []
   file.each do |line| 
     # Ignore comments and blank lines
@@ -89,10 +89,10 @@ if conf[:bibids].start_with?('file:')
     bibids << line
   end
 else
-   bibids = conf[:bibids].split(',')
+  bibids = bibids.split(',')
 end
 conf[:bibids] = bibids
-# puts bibids.inspect
+
   
 # TODO Throw error if: no bibids, no catalog
 
