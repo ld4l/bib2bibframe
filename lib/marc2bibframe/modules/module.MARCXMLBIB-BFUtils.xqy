@@ -29,7 +29,7 @@ xquery version "1.0";
 module namespace marc2bfutils  = 'info:lc/id-modules/marc2bfutils#';
 declare namespace marcxml      = "http://www.loc.gov/MARC21/slim";
 declare namespace bf           	= "http://bibframe.org/vocab/";
-
+declare namespace rdf           	= "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 (: VARIABLES :)
 declare variable $marc2bfutils:resourceTypes := (
     <resourceTypes>
@@ -135,7 +135,7 @@ declare variable $marc2bfutils:resourceTypes := (
 		<!--<subject tag="630">Work</subject>-->
 		<subject tag="648">Temporal</subject>
 		<subject tag="650">Topic</subject>
-		<subject tag="651">Place</subject>
+		<!--<subject tag="651">Place</subject>-->
 		<subject tag="654">Topic</subject>
 		<subject tag="655">Topic</subject>
 		<!--<subject tag="655">Genre</subject>		
@@ -146,7 +146,7 @@ declare variable $marc2bfutils:resourceTypes := (
 		<subject tag="656">Topic</subject>		
 		<subject tag="657">Topic</subject>
 		<subject tag="658">Topic</subject>
-		<subject tag="662">Place</subject>		
+		<!--<subject tag="662">Place</subject>		-->
 		<!--<subject tag="662">HierarchicalPlace</subject>-->
 		<subject tag="653">Topic</subject>
 		<subject tag="751">Place</subject>
@@ -183,12 +183,12 @@ declare variable $marc2bfutils:classes := (
     
     <property name="classificationDesignation" label="Part of class scheme used" domain="Work" marc="if 082,083 --/m=a then'standard', m=b then 'optional'" tag="(082|083)"  sfcodes="m=a then'standard', m=b then 'optional'"/>
     <property name="classificationStatus" label="status of classification" domain="Work" marc="if 086/z then status=canceled/invalid" tag="if "  sfcodes="z then status=canceled/invalid"/>
-    <property name="classificationLcc" label="LCC Classification" domain="Work" marc="050,051,055,070,071--/a" tag="(050|051|052|055|070|071)" sfcodes="a" level="property"/>
-    <property name="classificationNlm" label="NLM Classification" domain="Work" marc="060,061--/a" tag="(060|061)" sfcodes="a" level="property"/>
+    <property name="classificationLcc" className="LccClassification" label="LCC Classification" domain="Work" marc="050,051,055,070,071--/a" tag="(050|051|052|055|070|071)" sfcodes="a" level="property"/>
+    <property name="classificationNlm" className="NlmClassification" label="NLM Classification" domain="Work" marc="060,061--/a" tag="(060|061)" sfcodes="a" level="property"/>
     <property name="classification" label="classification" domain="Work" marc="084,086--/a" tag="(084|086)" ind1=" " sfcodes="a" level="property"/>
-    <property name="classificationDdc" label="DDC Classification" domain="Work" marc="083--/a'hyphen'c" tag="083" sfcodes="a'hyphen'c" level="property"/> 
-    <property name="classificationDdc" label="DDC Classification" domain="Work" marc="082--/a" tag="082" sfcodes="a" level="property"/>	
-    <property name="classificationUdc" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c" level="property"/>	
+    <property name="classificationDdc" className="DdcClassification" label="DDC Classification" domain="Work" marc="083--/a'hyphen'c" tag="083" sfcodes="a'hyphen'c" level="property"/> 
+    <property name="classificationDdc" className="DdcClassification" label="DDC Classification" domain="Work" marc="082--/a" tag="082" sfcodes="a" level="property"/>	
+    <property name="classificationUdc" className="UdcClassification" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c" level="property"/>	
 </vocab>
 );
 declare variable $marc2bfutils:sounds := (
@@ -3224,7 +3224,7 @@ declare function marc2bfutils:generate-carrier-code($carrier-text as xs:string) 
 (: This function matches the content text to the varable containing the content code, returning the code for building a uri
 :)
 declare function marc2bfutils:generate-content-code($content-text as xs:string) as xs:string {
- fn:string( $marc2bfutils:media-types/term[aL=$content-text]/@code)
+ fn:string( $marc2bfutils:content-types/term[aL=$content-text]/@code)
  			
 };
 (: This function matches the mediatype text to the varable containing the mediatype code, returning the code for building a uri
@@ -3266,4 +3266,22 @@ return	if ($len=0) then
 	else
 		$str
 
+};
+
+
+(: This function accepts a string language and tries to convert to the marc code
+
+
+:)
+declare function marc2bfutils:process-language( $lang as xs:string*){
+ 
+        if ($lang) then        
+            let $lang:=  (:some have 2 codes german = deu, ger :)
+                    $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation($lang,".")]/iso6392[1]
+            return if ($lang!="") then
+                        element bf:language { 
+                                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
+                                      }
+                         else element bf:languageNote {marc2bfutils:clean-string(fn:string($lang))}
+       else ()
 };
