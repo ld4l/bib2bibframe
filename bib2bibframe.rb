@@ -30,32 +30,19 @@ OptionParser.new do |opts|
 
   opts.banner = 'Usage: bib2bibframe [options]'
 
-  opts.on('--ids', '=MANDATORY', String, 'Comma-separated list of bib ids OR the string "file:" followed by the path to a file containing a newline-delimited list of bib ids. The file may contain comment lines prefixed with #.') do |arg|
-    if arg.start_with?('file:')
-      file = File.new arg[5..-1]
-      ids = []
-      file.each do |line| 
-        # Ignore comments and blank lines
-        line.chomp!
-        next if line.empty? || line[0] == '#'
-        ids << line
-      end
-      # puts ids.inspect
-    else
-      ids = arg.split(',')
-    end
-    options[:bibids] = ids 
+  opts.on('--bibids', '=[OPTIONAL]', String, 'Comma-separated list of bib ids OR the string "file:" followed by the path to a file containing a newline-delimited list of bib ids. The file may contain comment lines prefixed with #.') do |arg|
+    options[:bibids] = bibids 
   end  
 
-  opts.on('--baseuri', '=[OPTIONAL]', String, 'Namespace for minting URIs; overrides configuration setting.') do |arg|
+  opts.on('--baseuri', '=[OPTIONAL]', String, 'Namespace for minting URIs. Overrides configuration setting.') do |arg|
     options[:baseuri] = arg
   end 
 
-  opts.on('--batch', '', nil, 'Converts all records together to a single file, rather than separately to individual files.') do
+  opts.on('--batch', '=[OPTIONAL]', String, 'If true, converts all records together to a single file, rather than separately to individual files. Overrides configuration setting. Defaults to false.') do
     options[:batch] = true
   end  
     
-  opts.on('--catalog', '=[OPTIONAL]', String, 'Library catalog from which to retrieve; overrides configuration setting.') do |arg|
+  opts.on('--catalog', '=[OPTIONAL]', String, 'Library catalog from which to retrieve records. Overrides configuration setting.') do |arg|
     options[:catalog] = arg
   end
 
@@ -63,15 +50,15 @@ OptionParser.new do |opts|
     conf_file = arg
   end
   
-  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files; overrides configuration setting; defaults to data subdirectory of current directory.') do |arg|
+  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files. Overrides configuration setting. Defaults to data subdirectory of current directory.') do |arg|
     options[:datadir] = arg
   end 
   
-  opts.on('--format', '=[OPTIONAL]', String, 'RDF serialization; overrides configuration setting. Options: rdfxml, rdfxml-raw, ntriples, json. Defaults to rdfxml.') do |arg|
+  opts.on('--format', '=[OPTIONAL]', String, 'RDF serialization. Overrides configuration setting. Options: rdfxml, rdfxml-raw, ntriples, json. Defaults to rdfxml.') do |arg|
     options[:format] = arg
   end   
 
-  opts.on('--logdir', '=[OPTIONAL]', String, 'Directory for storing log files; overrides configuration setting; defaults to log subdirectory of current directory.') do |arg|
+  opts.on('--logdir', '=[OPTIONAL]', String, 'Directory for storing log files. Overrides configuration setting. Defaults to log subdirectory of current directory.') do |arg|
     options[:logdir] = arg
   end  
   
@@ -90,6 +77,24 @@ conf.merge! conf_file_settings
 
 # Commandline arguments take precedence.
 conf.merge! options
+
+
+if conf[:bibids].start_with?('file:')
+  file = File.new conf[:bibids][5..-1]
+  bibids = []
+  file.each do |line| 
+    # Ignore comments and blank lines
+    line.chomp!
+    next if line.empty? || line[0] == '#'
+    bibids << line
+  end
+else
+   bibids = conf[:bibids].split(',')
+end
+conf[:bibids] = bibids
+# puts bibids.inspect
+  
+# TODO Throw error if: no bibids, no catalog
 
 # Debugging
 # puts 'conf_file: ' + conf_file

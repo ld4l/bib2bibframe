@@ -4,6 +4,17 @@
 # commandline argument.
 baseuri: http://library.example.edu/individual/
 
+# If true, convert all records together to a single file. If false, convert
+# each record to an individual file. Optional: may be overridden by a 
+# commandline argument.
+batch: false
+
+# Default location of bib ids. Optional: may be overridden by a commandline
+# argument. Comma-separated list of bib ids OR the string "file:" followed by 
+# the path to a file containing a newline-delimited list of bib ids. The file 
+# may contain comment lines prefixed with #.
+bibids: file:/usr/local/bib2bibframe/bibids.txt
+
 # Library catalog URL. Optional: may be overridden by a commandline argument.
 # The catalog is assumed to support use of the .marcxml extension to request 
 # marcxml. A future update will include marc2marcxml conversion if the catalog 
