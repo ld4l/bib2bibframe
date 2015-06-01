@@ -181,11 +181,15 @@ class Converter
     # Convert marcxml for the id to bibframe rdf and write to file
     
     def marcxml_to_bibframe xmlfilename
+      
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
+ 
       # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
       # syntax, so the usebnode value must be specified. 
       command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=false" 
-      if @prettyprint
+ 
+      # TODO Is there a way to pretty-print other formats?
+      if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )
         # The output from the LC converter contains both single and double 
         # quotes. It can't be piped from echo to xmllint, because the argument
         # to echo cannot be wrapped in either single or double quotes. Piping
@@ -193,7 +197,9 @@ class Converter
         # to be stored in a variable.
         command += " | xmllint --format -"
       end
+ 
       rdf = `#{command}` 
+      
       File.open(rdffile, 'w') { |file| file.write rdf }   
     end
 

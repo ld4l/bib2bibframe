@@ -23,7 +23,7 @@ catalog: http://search.library.cornell.edu
 
 # Serialization format. Optional: may be overridden by a commandline argument.
 # Defaults to rdfxml.
-# format: turtle
+# format: ntriples
 
 # Pretty-print the output files. Defaults to false.
 # prettyprint: true
