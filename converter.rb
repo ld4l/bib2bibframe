@@ -141,7 +141,9 @@ class Converter
   
       @log[:records] << id    
       
-      # Pretty print the unformatted marcxml for display purposes
+      # Pretty print the unformatted marcxml for display purposes. The marcxml
+      # contains only single quotes, so passing it to echo in double quotes 
+      # works.
       if @prettyprint
         marcxml = `echo "#{marcxml}" | xmllint --format -`
       end
@@ -184,6 +186,11 @@ class Converter
       # syntax, so the usebnode value must be specified. 
       command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=false" 
       if @prettyprint
+        # The output from the LC converter contains both single and double 
+        # quotes. It can't be piped from echo to xmllint, because the argument
+        # to echo cannot be wrapped in either single or double quotes. Piping
+        # the converter output directly to xmllint works, since it doesn't have
+        # to be stored in a variable.
         command += " | xmllint --format -"
       end
       rdf = `#{command}` 
