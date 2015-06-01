@@ -17,6 +17,7 @@ CONVERTER_DEFAULTS = {
   # ntriples, json, exhibitJSON
   :format => 'rdfxml',  
   :logdir => File.join(Dir.pwd, 'log'),
+  :prettyprint => false,
 }
 
 conf = CONVERTER_DEFAULTS
@@ -61,7 +62,11 @@ OptionParser.new do |opts|
   opts.on('--logdir', '=[OPTIONAL]', String, 'Directory for storing log files. Overrides configuration setting. Defaults to log subdirectory of current directory.') do |arg|
     options[:logdir] = arg
   end  
-  
+
+  opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the output. Overrides configuration setting. Defaults to log subdirectory of current directory.') do |arg|
+    options[:logdir] = arg
+  end  
+   
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts
     exit

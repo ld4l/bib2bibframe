@@ -14,6 +14,9 @@ catalog: https://newcatalog.library.cornell.edu/catalog
 # Defaults to rdfxml.
 # format: turtle
 
+# Pretty-print the output files. Defaults to false.
+# prettyprint: true
+
 # Directory to which data is written. Optional: commandline argument overrides
 # this setting. In the absence of both, defaults to data subdirectory of
 # current working directory.

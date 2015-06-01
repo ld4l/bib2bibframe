@@ -23,7 +23,10 @@ catalog: http://search.library.cornell.edu
 
 # Serialization format. Optional: may be overridden by a commandline argument.
 # Defaults to rdfxml.
-format: rdfxml
+# format: turtle
+
+# Pretty-print the output files. Defaults to false.
+# prettyprint: true
 
 # Directory to which data is written. Optional: commandline argument overrides
 # this setting. In the absence of both, defaults to ./data.
