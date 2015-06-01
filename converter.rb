@@ -142,7 +142,9 @@ class Converter
       @log[:records] << id    
         
       # Pretty print the unformatted marcxml for display purposes
-      marcxml = `echo "#{marcxml}" | xmllint --format -` 
+      # NB Pretty printing here requires double quotes around the xml, because
+      # the xml uses single quotes
+      `echo "#{marcxml}" | xmllint --format -`
     end
     
     def marcxml_records_to_collection marcxml
@@ -173,10 +175,24 @@ class Converter
     end
 
     # Convert marcxml for the id to bibframe rdf and write to file
+    
     def marcxml_to_bibframe xmlfilename
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
-      `java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} > #{rdffile}`
+      # Two different commands based on Saxon version. Saxon 9.6 removed support
+      # for defaults in favor of the XQuery 3.0 syntax, so the usebnodes value
+      # must be specified. Saxon 9.5 and below support the default (false).
+      # ** TODO Can we automatically detect the version of Saxon and choose the
+      # appropriate command?
+      # Saxon 9.6
+      rdf = `java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=true`
+      # Saxon < 9.6
+      # rdf = `java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format}`
+      # NB Pretty printing here requires single quotes around the rdf, because
+      # the rdf is generated with double quotes.
+      rdf = `echo '#{rdf}' | xmllint --format -`
+      File.open(rdffile, 'w') { |file| file.write rdf }   
     end
+
     
     def sg_or_pl(string, count)
       count.to_s + ' ' + string + (count == 1 ? '' : 's')
