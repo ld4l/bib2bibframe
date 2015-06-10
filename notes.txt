@@ -1,0 +1,10 @@
+# Saxon 9.5.1 supports defaults as in pre-XQuery 3.0; don't need to specify usebnodes=false
+java -cp /Users/rjy7/Workspace/javatest/lib/saxon951/saxon9he.jar net.sf.saxon.Query /Users/rjy7/Workspace/javatest/lib/marc2bibframe/xbin/saxon.xqy marcxmluri=/Users/rjy7/data/cul/bib/split/bib.001.1-20.xml baseuri=http://ld4l.library.cornell.edu/individual/ serialization=rdfxml 
+
+# Saxon 9.6 has removed support for defaults in favor of the XQuery 3.0 syntax; need to specify usebnodes=false
+java -cp /Users/rjy7/Workspace/javatest/lib/saxon960/saxon9he.jar net.sf.saxon.Query /Users/rjy7/Workspace/javatest/lib/marc2bibframe/xbin/saxon.xqy marcxmluri=/Users/rjy7/data/cul/bib/split/bib.001.1-20.xml baseuri=http://ld4l.library.cornell.edu/individual/ serialization=rdfxml usebnodes=false
+
+# saxon3.xqy (3 for XQuery 3.0) is designed to work with Saxon 9.6.0, but XQuery 3.0 is not supported in Saxon HE (home edition)
+java -cp /Users/rjy7/Workspace/javatest/lib/saxon960/saxon9he.jar net.sf.saxon.Query /Users/rjy7/Workspace/javatest/lib/marc2bibframe/xbin/saxon3.xqy marcxmluri=/Users/rjy7/data/cul/bib/split/bib.001.1-20.xml baseuri=http://ld4l.library.cornell.edu/individual/ serialization=rdfxml 
+
+If we just add "usebnodes=false" to the command, either version of Saxon will work.
