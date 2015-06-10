@@ -23,12 +23,14 @@ class Converter
       :no_records => [],
     }  
       
-    datetime = Time.now.strftime('%Y%m%d-%H%M%S')
+    datetime = Time.now.strftime('%Y-%m-%d-%H%M%S')
     @logfile = File.join(@logdir, datetime + '.log')
     @datadir = File.join(@datadir, datetime)      
     
-    @saxon = File.join(File.dirname(__FILE__), 'lib', 'saxon', 'saxon9he.jar')
+    @saxon = File.join(File.dirname(__FILE__), 'lib', 'saxon951', 'saxon9he.jar')
+
     @xquery = File.join(File.dirname(__FILE__), 'lib', 'marc2bibframe', 'xbin', 'saxon.xqy') 
+    
     # Non-rdfxml formats require this additional parameter to the LC converter
     @method = (@format == 'ntriples' || @format == 'json') ? "!method=text" : ''
     
@@ -183,9 +185,10 @@ class Converter
     def marcxml_to_bibframe xmlfilename
       
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
- 
+      
       # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
-      # syntax, so the usebnode value must be specified. 
+      # syntax, so the usebnode value must be specified. Add the parameter so
+      # we can use either Saxon 9.5 or 9.6.    
       command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=false" 
  
       # TODO Is there a way to pretty-print other formats?
