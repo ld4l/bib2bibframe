@@ -41,11 +41,12 @@ class Converter
     # Non-rdfxml formats require this additional parameter to the LC converter
     @method = (@format == 'ntriples' || @format == 'json') ? "!method=text" : ''
     
-    create_data_directories
   end
 
   def convert  
     
+    create_data_directories
+        
     if ! @bibids.empty?
       # For now, batch vs single only supported for bibid input
       convert_bibids
@@ -55,8 +56,7 @@ class Converter
     # TODO Add support for MARC input
     # elseif @marc
       # convert_marc
-    end
-      
+    end      
   end
 
   # Write the log to file
@@ -116,8 +116,11 @@ class Converter
         @log[:message] << "Created data directory #{@datadir}."
       end
         
-      @xmldir = File.join(@datadir, 'marcxml') 
-      FileUtils.makedirs @xmldir unless File.directory? @xmldir
+      # If input is marcxml, don't need a directory to store generated marcxml.
+      if @marcxml.empty?
+        @xmldir = File.join(@datadir, 'marcxml') 
+        FileUtils.makedirs @xmldir unless File.directory? @xmldir
+      end
       
       @rdfdir = File.join(@datadir, 'bibframe', @format)
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
