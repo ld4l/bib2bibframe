@@ -3,6 +3,7 @@ require 'fileutils'
 class Converter
 
   FILE_EXTENSIONS = {
+    'marc' => '.mrc',
     'marcxml' => '.xml',
     'rdfxml' => '.rdf',
     'rdfxml-raw' => '.rdf',
@@ -14,6 +15,11 @@ class Converter
   # Set variables and create directories common to all bibids in the conversion
   # request
   def initialize config
+    
+    # Initialize instance variables that may not be set in config hash
+    @bibids = ''
+    @marcxml = ''
+    # @marc = ''
 
     config.each {|k,v| instance_variable_set("@#{k}",v)}
 
@@ -21,6 +27,7 @@ class Converter
       :message => [],
       :records => [],
       :no_records => [],
+      :record_count => 0,
     }  
       
     datetime = Time.now.strftime('%Y-%m-%d-%H%M%S')
@@ -38,39 +45,64 @@ class Converter
   end
 
   def convert  
-    @batch ? convert_batch : convert_singles
+    
+    if ! @bibids.empty?
+      # For now, batch vs single only supported for bibid input
+      convert_bibids
+    elsif ! @marcxml.empty?      
+      # TODO If file doesn't exist, either log and exit, or throw an error
+      convert_marcxml
+    # TODO Add support for MARC input
+    # elseif @marc
+      # convert_marc
+    end
+      
   end
 
   # Write the log to file
   def log
-      
-    totals_log = "#{sg_or_pl('bib id', @bibids.length)} processed."
-    
-    records_log = sg_or_pl('record', @log[:records].length) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe'
-    # On a large scale we wouldn't want this. Can just inspect the no_records
-    # log to determine what was not successfully converted.
-    # if @log[:records].length > 0
-    #   records_log << ': ' + @log[:records].join(', ')
-    # end
-    records_log << '.'
-    
-    no_records_log = "#{sg_or_pl('id', @log[:no_records].length)} without a bib record"
-    if @log[:no_records].length > 0
-      no_records_log << ': ' + @log[:no_records].join(', ')
-    end
-    no_records_log << '.'
-    
-    @log[:message] << [ totals_log, records_log, no_records_log ]
-    
+
     if (! File.directory?(@logdir) )
       FileUtils.makedirs @logdir
       @log[:message] << "Created log directory #{@logdir}."
     end
     
+    # record_count = @log[:records].length
+    record_count = @log[:record_count]
+    no_record_count = @log[:no_records].length
+
+    if ! @bibids.empty?
+      bibid_count = @bibids.length
+      totals_log = "#{sg_or_pl('bib id', bibid_count)} processed."
+      
+      records_log = sg_or_pl('record', record_count) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe'
+      # On a large scale we wouldn't want this. Can just inspect the no_records
+      # log to determine what was not successfully converted.
+      # if @log[:records].length > 0
+      #   records_log << ': ' + @log[:records].join(', ')
+      # end
+      records_log << '.'
+      
+      no_records_log = "#{sg_or_pl('id', no_record_count)} without a bib record"
+      if no_record_count > 0
+        no_records_log << ': ' + @log[:no_records].join(', ')
+      end
+      no_records_log << '.'
+      
+      @log[:message] << [ totals_log, records_log, no_records_log ]
+           
+    elsif ! @marcxml.empty?
+      totals_log = "#{sg_or_pl('marcxml file', record_count)} converted to bibframe."
+      @log[:message] << totals_log
+    end
+
+    # TODO This can be done all at once instead of line by line; but can we
+    # still ignore 
     File.open(@logfile, 'w') do |file|
       @log[:message].each do |line| 
-        puts line
-        file.puts line  
+        next if line.nil? or line.empty?
+        puts line # to stdout
+        file.puts line # to logfile 
       end
     end 
   end
@@ -90,8 +122,39 @@ class Converter
       @rdfdir = File.join(@datadir, 'bibframe', @format)
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
     end
+    
+    def convert_marcxml
+      
+      # @marcxml is a directory name
+      if FileTest.directory? @marcxml
+        Dir.foreach(@marcxml) do |filename|  
+            marcxml_file_to_bibframe File.join(@marcxml, filename)
+          end
+      # @marcxml is a filename
+      # TODO Handle other possibilities - e.g., no file or directory exists
+      else 
+        marcxml_file_to_bibframe @marcxml
+      end    
+    end
+    
+    def marcxml_file_to_bibframe xmlfilename
+      # TODO Not a bulletproof way of determining file type
+      if xmlfilename.end_with? ".xml"
+        marcxml_to_bibframe xmlfilename
+      end
+    end
+   
+    
+    def convert_marc
+      # TODO Add support for marc input files/directory
+    end
 
-    def convert_singles 
+    def convert_bibids
+      # Batch vs single mode applies only to bibid input, for now. 
+      @batch ? convert_bibids_batch : convert_bibids_singles
+    end
+    
+    def convert_bibids_singles
       @bibids.each do |id|
         xmlfilename = bibid_to_marcxml id  
         if xmlfilename && ! xmlfilename.empty?   
@@ -100,7 +163,7 @@ class Converter
       end
     end
     
-    def convert_batch
+    def convert_bibids_batch
       xmlfilename = bibids_to_marcxml
       if xmlfilename
         marcxml_to_bibframe xmlfilename  
@@ -184,6 +247,7 @@ class Converter
     
     def marcxml_to_bibframe xmlfilename
       
+      @log[:record_count] += 1
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
       
       # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
