@@ -17,6 +17,7 @@ CONVERTER_DEFAULTS = {
   # ntriples, json, exhibitJSON
   :format => 'rdfxml',  
   :logdir => File.join(Dir.pwd, 'log'),
+  :logging => 'file, stdout',
   :prettyprint => false,
 }
 
@@ -63,14 +64,14 @@ OptionParser.new do |opts|
     options[:logdir] = arg
   end  
 
+  opts.on('--logging', '=[OPTIONAL]', String, 'Logging options: off, file, stdout, or both file and stdout.') do |arg|
+    options[:logging] = arg
+  end  
+  
   opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the output. Overrides configuration setting. Defaults to log subdirectory of current directory.') do |arg|
     options[:logdir] = arg
   end  
   
-  opts.on('--source', '=[OPTIONAL]', String, 'Absolute path to source file or directory') do |arg|
-    options[:source] = arg
-  end
-   
   opts.on_tail('-h', '--help', 'Show this message') do
     puts opts
     exit
@@ -87,9 +88,8 @@ conf.merge! conf_file_settings
 # Commandline arguments take precedence.
 conf.merge! options
 
-input = conf[:input]
-conf.delete(:input)
-  
+input = conf.delete(:input)
+
 # Input is a file of bibids
 if input.start_with?('bibids:') 
   # TODO If file doesn't exist, either log and exit, or throw an error
@@ -107,13 +107,12 @@ if input.start_with?('bibids:')
 elsif input.start_with?('marcxml:')
   conf[:marcxml] = input[8..-1]
 
-    
 # Input is a path to a MARC file or directory of files 
 # TODO Add support for MARC input
 elsif input.start_with?('marc:')
   # conf[:marc] = input[5..-1]
   puts "MARC input currently not supported"
-  return
+  exit
   # TODO If file doesn't exist, either log and exit, or throw an error
   # source = File.new input[5..-1]
   # if File.file? source
@@ -131,12 +130,24 @@ end
 # TODO If no bibids or source specified, or no catalog: either throw an error
 # or log an error and exit.
 
+
+# Convert logging option from string to array
+logging = conf.delete(:logging).split(%r{,\s*})
+log_destination = {}
+if logging.include? 'file'
+  log_destination[:dir] = conf[:logdir]
+end
+log_destination[:stdout] = (logging.include? 'stdout') ? true : false
+conf.delete(:logdir)
+conf[:log_destination] = log_destination
+
+
 # Debugging
 # conf.each { |k,v| puts "#{k}: #{v}" }
 
 converter = Converter.new(conf)
 converter.convert
-converter.log
+
 
 
 

@@ -20,7 +20,7 @@ class Converter
     @bibids = ''
     @marcxml = ''
     # @marc = ''
-
+    
     config.each {|k,v| instance_variable_set("@#{k}",v)}
 
     @log = {
@@ -30,10 +30,6 @@ class Converter
       :record_count => 0,
     }  
       
-    datetime = Time.now.strftime('%Y-%m-%d-%H%M%S')
-    @logfile = File.join(@logdir, datetime + '.log')
-    @datadir = File.join(@datadir, datetime)      
-    
     @saxon = File.join(File.dirname(__FILE__), 'lib', 'saxon951', 'saxon9he.jar')
 
     @xquery = File.join(File.dirname(__FILE__), 'lib', 'marc2bibframe', 'xbin', 'saxon.xqy') 
@@ -45,71 +41,46 @@ class Converter
 
   def convert  
     
-    create_data_directories
-        
-    if ! @bibids.empty?
-      # For now, batch vs single only supported for bibid input
-      convert_bibids
-    elsif ! @marcxml.empty?      
-      # TODO If file doesn't exist, either log and exit, or throw an error
-      convert_marcxml
-    # TODO Add support for MARC input
-    # elseif @marc
-      # convert_marc
-    end      
-  end
-
-  # Write the log to file
-  def log
-
-    if (! File.directory?(@logdir) )
-      FileUtils.makedirs @logdir
-      @log[:message] << "Created log directory #{@logdir}."
-    end
+    now = Time.now
+    datetime_format = '%Y-%m-%d %T%z'
     
-    # record_count = @log[:records].length
-    record_count = @log[:record_count]
-    no_record_count = @log[:no_records].length
-
-    if ! @bibids.empty?
-      bibid_count = @bibids.length
-      totals_log = "#{sg_or_pl('bib id', bibid_count)} processed."
+    @log[:message] << "Start conversion: " + now.strftime(datetime_format) 
+    
+    create_directories now.strftime('%Y-%m-%d-%H%M%S')
+        
+    # if ! @bibids.empty?
+      # # For now, batch vs single only supported for bibid input
+      # convert_bibids
+    # elsif ! @marcxml.empty?      
+      # # TODO If file doesn't exist, either log and exit, or throw an error
+      # convert_marcxml
+    # # TODO Add support for MARC input
+    # # elseif @marc
+      # # convert_marc
+    # end  
+    
+    @log[:message] << "End conversion: " + Time.now.strftime(datetime_format) 
+    
+    log
       
-      records_log = sg_or_pl('record', record_count) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe'
-      # On a large scale we wouldn't want this. Can just inspect the no_records
-      # log to determine what was not successfully converted.
-      # if @log[:records].length > 0
-      #   records_log << ': ' + @log[:records].join(', ')
-      # end
-      records_log << '.'
-      
-      no_records_log = "#{sg_or_pl('id', no_record_count)} without a bib record"
-      if no_record_count > 0
-        no_records_log << ': ' + @log[:no_records].join(', ')
-      end
-      no_records_log << '.'
-      
-      @log[:message] << [ totals_log, records_log, no_records_log ]
-           
-    elsif ! @marcxml.empty?
-      totals_log = "#{sg_or_pl('marcxml file', record_count)} converted to bibframe."
-      @log[:message] << totals_log
-    end
-
-    # TODO This can be done all at once instead of line by line; but can we
-    # still ignore 
-    File.open(@logfile, 'w') do |file|
-      @log[:message].each do |line| 
-        next if line.nil? or line.empty?
-        puts line # to stdout
-        file.puts line # to logfile 
-      end
-    end 
   end
+
+ 
     
   private
 
-    def create_data_directories
+    def create_directories datetime
+       
+      # Create log directory 
+      logdir = @log_destination[:dir]
+      if logdir       
+          FileUtils.makedirs logdir
+          @log[:message] << "Created log directory #{logdir}."
+          @log_destination[:file] = File.join(logdir, datetime + '.log')
+      end
+      
+      # Create data directories
+      @datadir = File.join(@datadir, datetime) 
 
       if (! File.directory?(@datadir) )
         FileUtils.makedirs @datadir
@@ -273,7 +244,58 @@ class Converter
       File.open(rdffile, 'w') { |file| file.write rdf }   
     end
 
-    
+
+    def log
+  
+      return if @log_destination.empty?
+      
+      # Build the log message
+      
+      @log[:message] << 'Results:'
+      
+      # record_count = @log[:records].length
+      record_count = @log[:record_count]
+      no_record_count = @log[:no_records].length
+  
+      if ! @bibids.empty?
+        bibid_count = @bibids.length
+        totals_log = "#{sg_or_pl('bib id', bibid_count)} processed."
+        
+        records_log = sg_or_pl('record', record_count) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe'
+        # On a large scale we wouldn't want this. Can just inspect the no_records
+        # log to determine what was not successfully converted.
+        # if @log[:records].length > 0
+        #   records_log << ': ' + @log[:records].join(', ')
+        # end
+        records_log << '.'
+        
+        no_records_log = "#{sg_or_pl('id', no_record_count)} without a bib record"
+        if no_record_count > 0
+          no_records_log << ': ' + @log[:no_records].join(', ')
+        end
+        no_records_log << '.'
+        
+        @log[:message] << [ totals_log, records_log, no_records_log ]
+             
+      elsif ! @marcxml.empty?
+        totals_log = "#{sg_or_pl('marcxml file', record_count)} converted to bibframe."
+        @log[:message] << totals_log
+      end
+  
+      # Write the log to a file, if specified
+      if @log_destination[:file]
+        File.open(@log_destination[:file], 'w') do |file|
+          file.puts @log[:message]
+        end
+      end
+      
+      # Write the log to stdout, if specified
+      if @log_destination[:stdout]
+        puts @log[:message]
+      end
+  
+    end 
+       
     def sg_or_pl(string, count)
       count.to_s + ' ' + string + (count == 1 ? '' : 's')
     end

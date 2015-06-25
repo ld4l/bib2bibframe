@@ -39,6 +39,12 @@ datadir: /usr/local/bib2bibframe-converter/data
 # input: marcxml:/usr/local/bib2bibframe/marcxml
 # input: marcxml:/usr/local/bib2bibiframe/12398.xml
 
+# Logging options: off, file, stdout, or both file and stdout. Optional: 
+# commandline overrides this setting. Defaults to both file and stdout.
+# logging: off
+# logging: stdout
+logging: file, stdout
+
 # Log directory. Optional: commandline argument overrides this setting. In the 
 # absence of both, defaults to ./log.
 logdir: /usr/local/bib2bibframe-converter/log
