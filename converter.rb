@@ -112,9 +112,10 @@ class Converter
     end
     
     def marcxml_file_to_bibframe xmlfilename
-      # TODO Not a bulletproof way of determining file type
-      if xmlfilename.end_with? ".xml"
-        marcxml_to_bibframe xmlfilename
+      # TODO Extension doesn't guarantee mime type: use shell command 
+      # "file --mime-type <filename>" to check mime type.
+      if xmlfilename.end_with? ".xml" 
+        marcxml_to_bibframe File.absolute_path(xmlfilename)
       end
     end
    
