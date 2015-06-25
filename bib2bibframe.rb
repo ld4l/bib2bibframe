@@ -1,6 +1,7 @@
 #!/usr/bin/ruby -w
 
-# Convert a comma-separated list of Cornell bib ids to Bibframe RDF
+# Convert Cornell bib ids, marc, or marcxml to bibframe rdf (marc not yet
+# supported)
 
 require_relative 'converter'
 require 'optparse'
