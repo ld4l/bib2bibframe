@@ -145,6 +145,7 @@ conf[:log_destination] = log_destination
 # Debugging
 # conf.each { |k,v| puts "#{k}: #{v}" }
 
+
 converter = Converter.new(conf)
 converter.convert
 

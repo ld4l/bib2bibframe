@@ -48,17 +48,17 @@ class Converter
     
     create_directories now.strftime('%Y-%m-%d-%H%M%S')
         
-    # if ! @bibids.empty?
-      # # For now, batch vs single only supported for bibid input
-      # convert_bibids
-    # elsif ! @marcxml.empty?      
-      # # TODO If file doesn't exist, either log and exit, or throw an error
-      # convert_marcxml
-    # # TODO Add support for MARC input
-    # # elseif @marc
-      # # convert_marc
-    # end  
-    
+    if ! @bibids.empty?
+      # For now, batch vs single only supported for bibid input
+      convert_bibids
+    elsif ! @marcxml.empty?      
+      # TODO If file doesn't exist, either log and exit, or throw an error
+      convert_marcxml
+      # TODO Add support for MARC input
+    # elseif @marc
+      # convert_marc
+    end  
+     
     @log[:message] << "End conversion: " + Time.now.strftime(datetime_format) 
     
     log
