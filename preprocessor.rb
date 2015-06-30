@@ -1,4 +1,4 @@
-require 'nokogiri'
+# require 'nokogiri'
 
 class Preprocessor
   
@@ -7,7 +7,7 @@ class Preprocessor
   end
   
   def preprocess xmlfilename
-    puts "In preprocess method"
+    #puts "In preprocess method"
     
   end
   

@@ -17,17 +17,16 @@ class Converter
   # request
   def initialize config
     
-    # Initialize instance variables that may not be set in config hash
+    # Initialize instance variables that are optional config hash
     @bibids = ''
     @marcxml = ''
     # @marc = ''
     
-    config.each {|k,v| instance_variable_set("@#{k}",v)}
+    config.each {|k,v| instance_variable_set("@#{k}",v)}   
 
-    @log = {
-      :message => [],
-      :records => [],
-      :no_records => [],
+    @results = {
+      :ids_converted => [],
+      :ids_not_found => [],
       :record_count => 0,
     }  
       
@@ -43,13 +42,14 @@ class Converter
   end
 
   def convert  
-    
-    now = Time.now
+ 
     datetime_format = '%Y-%m-%d %T%z'
+        
+    start_time = Time.now
+ 
+    log "Start conversion: " + start_time.strftime(datetime_format)
     
-    @log[:message] << "Start conversion: " + now.strftime(datetime_format) 
-    
-    create_directories now.strftime('%Y-%m-%d-%H%M%S')
+    create_directories start_time.strftime('%Y-%m-%d-%H%M%S')
         
     if ! @bibids.empty?
       # For now, batch vs single only supported for bibid input
@@ -61,14 +61,17 @@ class Converter
     # elseif @marc
       # convert_marc
     end  
-     
-    @log[:message] << "End conversion: " + Time.now.strftime(datetime_format) 
-    
-    log
+
+    end_time = Time.now
+    duration = end_time - start_time
+
+    log "End conversion: " + end_time.strftime(datetime_format) + 
+      "\nProcessing time: " + seconds_to_time(duration)
+      
+    log_results
       
   end
 
- 
     
   private
 
@@ -78,8 +81,8 @@ class Converter
       logdir = @log_destination[:dir]
       if logdir       
           FileUtils.makedirs logdir
-          @log[:message] << "Created log directory #{logdir}."
           @log_destination[:file] = File.join(logdir, datetime + '.log')
+          log "Created log directory #{logdir}."
       end
       
       # Create data directories
@@ -87,7 +90,7 @@ class Converter
 
       if (! File.directory?(@datadir) )
         FileUtils.makedirs @datadir
-        @log[:message] << "Created data directory #{@datadir}."
+        log "Created data directory #{@datadir}."
       end
         
       # If input is marcxml, don't need a directory to store generated marcxml.
@@ -121,8 +124,7 @@ class Converter
         marcxml_to_bibframe File.absolute_path(xmlfilename)
       end
     end
-   
-    
+      
     def convert_marc
       # TODO Add support for marc input files/directory
     end
@@ -174,15 +176,17 @@ class Converter
     def get_marcxml id
 
       # Retrieve the marcxml from the catalog.
-      marcxml_url = File.join(@catalog, id + '.marcxml')      
+      marcxml_url = File.join(@catalog, id + '.marcxml')  
+      
+      # TODO Rewrite using curb gem - add to Gemfile    
       marcxml = `curl -s #{marcxml_url}`
       
       if (! marcxml.start_with?("<record"))
-        @log[:no_records] << id
+        @results[:ids_not_found] << id
         return ''
       end
   
-      @log[:records] << id    
+      @results[:ids_converted] << id    
       
       # Pretty print the unformatted marcxml for display purposes. The marcxml
       # contains only single quotes, so passing it to echo in double quotes 
@@ -225,7 +229,7 @@ class Converter
     
     def marcxml_to_bibframe xmlfilename
       
-      @log[:record_count] += 1
+      @results[:record_count] += 1
       
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
       
@@ -254,59 +258,69 @@ class Converter
     end
 
 
-    def log
+    def log_results
   
       return if @log_destination.empty?
       
       # Build the log message
       
-      @log[:message] << 'Results:'
-      
-      # record_count = @log[:records].length
-      record_count = @log[:record_count]
-      no_record_count = @log[:no_records].length
-  
+      record_count = @results[:record_count]
+
+      summary = []
+      summary << ["Results:"]
+
       if ! @bibids.empty?
-        bibid_count = @bibids.length
-        totals_log = "#{sg_or_pl('bib id', bibid_count)} processed."
+        totals_log << "#{sg_or_pl('bib id', @bibids.length)} processed."
         
-        records_log = sg_or_pl('record', record_count) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe'
-        # On a large scale we wouldn't want this. Can just inspect the no_records
-        # log to determine what was not successfully converted.
-        # if @log[:records].length > 0
-        #   records_log << ': ' + @log[:records].join(', ')
-        # end
-        records_log << '.'
-        
-        no_records_log = "#{sg_or_pl('id', no_record_count)} without a bib record"
-        if no_record_count > 0
-          no_records_log << ': ' + @log[:no_records].join(', ')
+        # For now, not logging individual ids successfully converted. Assumption is that they exist, so only log the number 
+        # converted, and individual ids not converted.
+        records_converted_log << sg_or_pl('record', record_count) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe.'
+                   
+        id_not_found_count = @results[:ids_not_found].length       
+        ids_not_found_log = "#{sg_or_pl('id', id_not_found_count)} without a bib record"
+        if id_not_found_count > 0
+          ids_not_found_log << ':' + @results[:ids_not_found].join(', ')
         end
-        no_records_log << '.'
-        
-        @log[:message] << [ totals_log, records_log, no_records_log ]
+        ids_not_found_log << '.'  
+            
+        summary << [ totals_log, record_count_log, ids_not_found_log ]
              
       elsif ! @marcxml.empty?
-        totals_log = "#{sg_or_pl('marcxml file', record_count)} converted to bibframe."
-        @log[:message] << totals_log
+        summary << "#{sg_or_pl('marcxml file', record_count)} converted to bibframe."
       end
-  
+      
+      log summary  
+    end
+    
+    
+    def log message
+                  
       # Write the log to a file, if specified
       if @log_destination[:file]
-        File.open(@log_destination[:file], 'w') do |file|
-          file.puts @log[:message]
+        File.open(@log_destination[:file], 'a') do |f|
+          f.puts message
         end
       end
       
       # Write the log to stdout, if specified
       if @log_destination[:stdout]
-        puts @log[:message]
-      end
-  
-    end 
+        puts message
+      end 
+    end
+     
        
     def sg_or_pl(string, count)
       count.to_s + ' ' + string + (count == 1 ? '' : 's')
     end
+    
+    def seconds_to_time(seconds)
+      floor = seconds.floor
+      h = floor / 3600
+      m = floor / 60 % 60
+      s = floor % 60
 
+      # sprintf "%02d:%02d:%02d", h, m, s
+      [h, m, s].map { |t| t.to_s.rjust(2, '0')}.join(':')
+    end
+    
 end
