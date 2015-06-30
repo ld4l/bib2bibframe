@@ -25,7 +25,7 @@ CONVERTER_DEFAULTS = {
 conf = CONVERTER_DEFAULTS
 
 # Default config file
-conf_file = File.join(File.dirname(__FILE__), 'conf', 'conf.yml')
+conf_file = File.join(Dir.pwd, 'conf.yml')
 
 # Parse options
 options = {}
@@ -45,7 +45,7 @@ OptionParser.new do |opts|
     options[:catalog] = arg
   end
 
-  opts.on('--conf', '=[OPTIONAL]', String, 'Configuration file path (directory and filename). Defaults to conf/conf.yml relative to this script.') do |arg|
+  opts.on('--conf', '=[OPTIONAL]', String, 'Path to configuration file path. Defaults to conf.yml in the current working directory.') do |arg|
     conf_file = arg
   end
   
@@ -81,7 +81,7 @@ OptionParser.new do |opts|
 end.parse!
 
 # Load values from config file and symbolize keys
-conf_file_settings =  (YAML.load_file conf_file).inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}   
+conf_file_settings =  (YAML.load_file conf_file).inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo} 
 
 # Config file values overwrite defaults.
 conf.merge! conf_file_settings
