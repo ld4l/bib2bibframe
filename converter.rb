@@ -1,4 +1,5 @@
 require 'fileutils'
+require_relative 'preprocessor'
 
 class Converter
 
@@ -36,6 +37,8 @@ class Converter
     
     # Non-rdfxml formats require this additional parameter to the LC converter
     @method = (@format == 'ntriples' || @format == 'json') ? "!method=text" : ''
+    
+    @preprocessor = Preprocessor.new 
     
   end
 
@@ -223,7 +226,12 @@ class Converter
     def marcxml_to_bibframe xmlfilename
       
       @log[:record_count] += 1
+      
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
+      
+      # Preprocess the xml
+      @preprocessor.preprocess xmlfilename
+      
       
       # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
       # syntax, so the usebnode value must be specified. Add the parameter so
