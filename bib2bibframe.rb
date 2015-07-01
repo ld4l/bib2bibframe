@@ -57,7 +57,7 @@ OptionParser.new do |opts|
     options[:format] = arg
   end   
   
-  opts.on('--input', '=[OPTIONAL]', String, 'Input. Options are: (1) Comma-separated list of bib ids. (2) The string "bibids:" followed by the absolute or relative path to a file containing a newline-delimited list of bib ids; the file may contain comment lines prefixed with #. (3) The string "marc:" followed by the absolute or relative path to a single MARC file or a directory of MARC files (extension ".mrc"). (4) The string "marcxml:" followed by the absolute or relative path to a single MARCXML file or a directory of MARCXML files (extension ".xml").') do |arg|
+  opts.on('--input', '=[OPTIONAL]', String, 'Input. Options are: (1) The string "bibids:" followed by a comma-separated list of bib ids. (2) The string "bibid-file:" followed by the absolute or relative path to a file containing a newline-delimited list of bib ids; the file may contain comment lines prefixed with #. (3) The string "marc:" followed by the absolute or relative path to a single MARC file or a directory of MARC files (extension ".mrc"). (4) The string "marcxml:" followed by the absolute or relative path to a single MARCXML file or a directory of MARCXML files (extension ".xml").') do |arg|
     options[:input] = arg
   end
 
@@ -91,48 +91,47 @@ conf.merge! conf_file_settings
 # Commandline arguments take precedence.
 conf.merge! options
 
-input = conf.delete(:input)
+if ! conf[:input] 
+  puts "ERROR: missing input value. Exiting."
+  exit
+end
 
-# Input is a file of bibids
-if input.start_with?('bibids:') 
+values = conf.delete(:input).partition ":"
+keys = [:type, :sep, :value]
+input = Hash[keys.zip values]
+
+case input[:type]
+when "bibids"
+  conf[:bibids] = input[:value]
+  
+when "bibid-file"
   # TODO If file doesn't exist, either log and exit, or throw an error
-  file = File.new input[7..-1]
+  file = File.new input[:value]
   bibids = []
   file.each do |line| 
     # Ignore comments and blank lines
     line.chomp!
+    puts line
     next if line.empty? || line[0] == '#'
     bibids << line
   end
   conf[:bibids] = bibids
  
-# Input is a path to a MARCXML file or directory of files
-elsif input.start_with?('marcxml:')
-  conf[:marcxml] = input[8..-1]
+when "marcxml"
+  # TODO If file doesn't exist, either log and exit, or throw an error
+  conf[:marcxml] = input[:value]
 
-# Input is a path to a MARC file or directory of files 
-# TODO Add support for MARC input
-elsif input.start_with?('marc:')
-  # conf[:marc] = input[5..-1]
+when "marc"
+  # Input is a path to a MARC file or directory of files 
+  # TODO Add support for MARC input
+  # conf[:marc] = input[:value]
   puts "MARC input currently not supported"
   exit
-  # TODO If file doesn't exist, either log and exit, or throw an error
-  # source = File.new input[5..-1]
-  # if File.file? source
-    # sourcefiles = [ source ]
-  # else 
-    # sourcefiles = Dir.glob(File.join(source, "*.mrc"))
-  # end
-  # conf[:marc] = sourcefiles  
-  
-# Input is a comma-separated list of bibids 
-else 
-  conf[:bibids] = input.split(%r{,\s*})
-end
-        
-# TODO If no bibids or source specified, or no catalog: either throw an error
-# or log an error and exit.
 
+else
+  puts "ERROR: invalid input value. Exiting."
+  exit
+end
 
 # Convert logging option from string to array
 logging = conf.delete(:logging).split(%r{,\s*})
@@ -147,7 +146,6 @@ conf[:log_destination] = log_destination
 
 # Debugging
 # conf.each { |k,v| puts "#{k}: #{v}" }
-
 
 converter = Converter.new(conf)
 converter.convert

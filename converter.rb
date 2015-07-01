@@ -274,11 +274,11 @@ class Converter
       summary << "Results:"
 
       if ! @bibids.empty?
-        totals_log << "#{sg_or_pl('bib id', @bibids.length)} processed."
+        totals_log = "#{sg_or_pl('bib id', @bibids.length)} processed."
         
         # For now, not logging individual ids successfully converted. Assumption is that they exist, so only log the number 
         # converted, and individual ids not converted.
-        records_converted_log << sg_or_pl('record', @results[:record_count]) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe.'
+        ids_converted_log = sg_or_pl('record', @results[:record_count]) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe.'
                    
         id_not_found_count = @results[:ids_not_found].length       
         ids_not_found_log = "#{sg_or_pl('id', id_not_found_count)} without a bib record"
@@ -287,7 +287,7 @@ class Converter
         end
         ids_not_found_log << '.'  
             
-        summary << [ totals_log, record_count_log, ids_not_found_log ]
+        summary << [ totals_log, ids_converted_log, ids_not_found_log ]
              
       elsif ! @marcxml.empty?
         summary << "#{sg_or_pl('marcxml file', @results[:file_count])} converted to bibframe."
@@ -323,8 +323,9 @@ class Converter
       m = floor / 60 % 60
       s = seconds.round % 60
 
-      # sprintf "%02d:%02d:%02d", h, m, s
-      [h, m, s].map { |t| t.to_s.rjust(2, '0')}.join(':')
+      # [h, m, s].map { |t| t.to_s.rjust(2, '0')}.join(':')
+      sprintf "%02d:%02d:%02d", h, m, s
+
     end
     
 end
