@@ -27,7 +27,6 @@ class Converter
     @results = {
       :ids_converted => [],
       :ids_not_found => [],
-      :record_count => 0,
       :file_count => 0,
     }  
       
@@ -125,6 +124,7 @@ class Converter
       # "file --mime-type <filename>" to check mime type.
       if xmlfilename.end_with? ".xml" 
         marcxml_to_bibframe File.absolute_path(xmlfilename)
+        @results[:file_count] += 1
       end
     end
       
@@ -232,11 +232,9 @@ class Converter
     
     def marcxml_to_bibframe xmlfilename
       
-      @results[:file_count] += 1
-      
       # Might be nice to count records in the file for reporting, but may be
       # too time-consuming on large files.
-      
+
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
       
       # Preprocess the xml
@@ -278,12 +276,12 @@ class Converter
         
         # For now, not logging individual ids successfully converted. Assumption is that they exist, so only log the number 
         # converted, and individual ids not converted.
-        ids_converted_log = sg_or_pl('record', @results[:record_count]) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe.'
+        ids_converted_log = sg_or_pl('record', @results[:ids_converted].length) + ' found and converted' + (@batch ? ' in batch ' : ' ') + 'to bibframe.'
                    
         id_not_found_count = @results[:ids_not_found].length       
         ids_not_found_log = "#{sg_or_pl('id', id_not_found_count)} without a bib record"
         if id_not_found_count > 0
-          ids_not_found_log << ':' + @results[:ids_not_found].join(', ')
+          ids_not_found_log << ': ' + @results[:ids_not_found].join(', ')
         end
         ids_not_found_log << '.'  
             
