@@ -82,8 +82,10 @@ class Converter
       logdir = @log_destination[:dir]
       if logdir       
           FileUtils.makedirs logdir
-          @log_destination[:file] = File.join(logdir, datetime + '.log')
           log "Created log directory #{logdir}."
+          @log_destination[:file] = File.join(logdir, datetime + '.log')
+          log "Writing to log file #{@log_destination[:file]}."
+
       end
       
       # Create data directories
