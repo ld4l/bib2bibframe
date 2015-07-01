@@ -49,7 +49,7 @@ logging: file, stdout
 # overrides this setting. In the absence of both, defaults to ./log.
 logdir: /usr/local/bib2bibframe-converter/log
 
-# Pretty-print the output files. Defaults to false.
+# Pretty-print the marcxml output files. Defaults to false.
 # prettyprint: true
 
 

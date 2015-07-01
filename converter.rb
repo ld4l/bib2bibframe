@@ -246,18 +246,18 @@ class Converter
       # we can use either Saxon 9.5 or 9.6.    
       command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=false" 
  
-      # TODO Is there a way to pretty-print other formats?
-      if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )
-        # The output from the LC converter contains both single and double 
-        # quotes. It can't be piped from echo to xmllint, because the argument
-        # to echo cannot be wrapped in either single or double quotes. Piping
-        # the converter output directly to xmllint works, since it doesn't have
-        # to be stored in a variable.
-        command += " | xmllint --format -"
-      end
+      # Not needed because converter already pretty-prints the rdf. 
+      # if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )
+        # # The output from the LC converter contains both single and double 
+        # # quotes. It can't be piped from echo to xmllint, because the argument
+        # # to echo cannot be wrapped in either single or double quotes. Piping
+        # # the converter output directly to xmllint works, since it doesn't have
+        # # to be stored in a variable.
+        # command += " | xmllint --format -"
+      # end
  
       rdf = `#{command}` 
-      
+
       File.open(rdffile, 'w') { |file| file.write rdf }   
     end
 

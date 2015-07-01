@@ -65,11 +65,11 @@ OptionParser.new do |opts|
     options[:logdir] = arg
   end  
 
-  opts.on('--logging', '=[OPTIONAL]', String, 'Logging options: off, file, stdout, or both file and stdout.') do |arg|
+  opts.on('--logging', '=[OPTIONAL]', String, 'Logging options: off, file, stdout, or both file and stdout. Overrides configuration setting. Defaults to both file and stdout.') do |arg|
     options[:logging] = arg
   end  
   
-  opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the output. Overrides configuration setting. Defaults to log subdirectory of current directory.') do |arg|
+  opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the marcxml output. Overrides configuration setting. Defaults to false.') do |arg|
     options[:logdir] = arg
   end  
   
