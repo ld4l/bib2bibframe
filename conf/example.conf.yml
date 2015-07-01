@@ -15,8 +15,8 @@ batch: false
 # doesn't support this.
 catalog: http://search.library.cornell.edu
 
-# Directory to which data is written. Optional: commandline argument overrides
-# this setting. In the absence of both, defaults to ./data.
+# Absolute or relative path to which data is written. Optional: commandline 
+# argument overrides this setting. In the absence of both, defaults to ./data.
 datadir: /usr/local/bib2bibframe-converter/data
 
 # Serialization format. Optional: may be overridden by a commandline argument.
@@ -25,19 +25,18 @@ datadir: /usr/local/bib2bibframe-converter/data
 
 # Input. Options are: 
 # (1) Comma-separated list of bib ids. 
-# (2) The string "bibids:" followed by the path to a file containing a 
-# newline-delimited list of bib ids. The file may contain comment lines 
-# prefixed with #. 
-# (3) The string "marc:" followed by the absolute path to a single MARC file or 
-# a directory of MARC files (extension ".mrc"). 
-# (4) The string "marcxml:" followed by the absolute path to a single MARCXML 
-# file or a directory of MARCXML files (extension ".xml")
-# input: 12398, 5673, 34562
+# (2) The string "bibids:" followed by the absolute or relative path to a file  
+# containing anewline-delimited list of bib ids. The file may contain comment 
+# lines prefixed with #. 
+# (3) The string "marc:" followed by the absolute or relative path to a single 
+# MARC file or a directory of MARC files (extension ".mrc"). 
+# (4) The string "marcxml:" followed by the absolute or relative path to a  
+# single MARCXML file or a directory of MARCXML files (extension ".xml").
+# input: 12398,5673,34562
 # input: bibids:/usr/local/bib2bibframe/bibids.txt
 # input: marc:/usr/local/bib2bibframe/marc
 # input: marc:/usr/local/bib2bibframe/marc/12398.mrc
 # input: marcxml:/usr/local/bib2bibframe/marcxml
-# input: marcxml:/usr/local/bib2bibiframe/12398.xml
 
 # Logging options: off, file, stdout, or both file and stdout. Optional: 
 # commandline overrides this setting. Defaults to both file and stdout.
@@ -45,8 +44,8 @@ datadir: /usr/local/bib2bibframe-converter/data
 # logging: stdout
 logging: file, stdout
 
-# Log directory. Optional: commandline argument overrides this setting. In the 
-# absence of both, defaults to ./log.
+# Absolute or relative path to log directory. Optional: commandline argument  
+# overrides this setting. In the absence of both, defaults to ./log.
 logdir: /usr/local/bib2bibframe-converter/log
 
 # Pretty-print the output files. Defaults to false.

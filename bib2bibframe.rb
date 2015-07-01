@@ -31,7 +31,7 @@ conf_file = File.join(Dir.pwd, 'conf.yml')
 options = {}
 OptionParser.new do |opts|
 
-  opts.banner = 'Usage: bib2bibframe [options]'
+  opts.banner = 'Usage: bib2bibframe.rb [options]'
 
   opts.on('--baseuri', '=[OPTIONAL]', String, 'Namespace for minting URIs. Overrides configuration setting.') do |arg|
     options[:baseuri] = arg
@@ -45,11 +45,11 @@ OptionParser.new do |opts|
     options[:catalog] = arg
   end
 
-  opts.on('--conf', '=[OPTIONAL]', String, 'Path to configuration file path. Defaults to conf.yml in the current working directory.') do |arg|
+  opts.on('--conf', '=[OPTIONAL]', String, 'Absolute or relative path to configuration file path. Defaults to conf.yml in the current working directory.') do |arg|
     conf_file = arg
   end
   
-  opts.on('--datadir', '=[OPTIONAL]', String, 'Directory for storing data files. Overrides configuration setting. Defaults to data subdirectory of current directory.') do |arg|
+  opts.on('--datadir', '=[OPTIONAL]', String, 'Absolute or relative path to directory for storing data files. Overrides configuration setting. Defaults to data subdirectory of current directory.') do |arg|
     options[:datadir] = arg
   end 
   
@@ -57,11 +57,11 @@ OptionParser.new do |opts|
     options[:format] = arg
   end   
   
-  opts.on('--input', '=[OPTIONAL]', String, 'Input. Options are: (1) Comma-separated list of bib ids. (2) The string "bibids:" followed by the absolute path to a file containing a newline-delimited list of bib ids; the file may contain comment lines prefixed with #. (3) The string "marc:" followed by the absolute path to a single MARC file or a directory of MARC files (extension ".mrc"). (4) The string "marcxml:" followed by the absolute path to a single MARCXML file or a directory of MARCXML files (extension ".xml").') do |arg|
+  opts.on('--input', '=[OPTIONAL]', String, 'Input. Options are: (1) Comma-separated list of bib ids. (2) The string "bibids:" followed by the absolute or relative path to a file containing a newline-delimited list of bib ids; the file may contain comment lines prefixed with #. (3) The string "marc:" followed by the absolute or relative path to a single MARC file or a directory of MARC files (extension ".mrc"). (4) The string "marcxml:" followed by the absolute or relative path to a single MARCXML file or a directory of MARCXML files (extension ".xml").') do |arg|
     options[:input] = arg
   end
 
-  opts.on('--logdir', '=[OPTIONAL]', String, 'Directory for storing log files. Overrides configuration setting. Defaults to log subdirectory of current directory.') do |arg|
+  opts.on('--logdir', '=[OPTIONAL]', String, 'Absolute or relative path of directory for storing log files. Overrides configuration setting. Defaults to log subdirectory of current directory.') do |arg|
     options[:logdir] = arg
   end  
 
