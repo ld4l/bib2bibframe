@@ -37,7 +37,7 @@ class Converter
     # Non-rdfxml formats require this additional parameter to the LC converter
     @method = (@format == 'ntriples' || @format == 'json') ? "!method=text" : ''
     
-    @preprocessor = Preprocessor.new 
+    # @preprocessor = Preprocessor.new 
     
   end
 
@@ -234,7 +234,7 @@ class Converter
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
       
       # Preprocess the xml
-      @preprocessor.preprocess xmlfilename
+      # @preprocessor.preprocess xmlfilename
       
       
       # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
