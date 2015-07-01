@@ -102,7 +102,7 @@ input = Hash[keys.zip values]
 
 case input[:type]
 when "bibids"
-  conf[:bibids] = input[:value]
+  conf[:bibids] = input[:value].split(%r{,\s*})
   
 when "bibid-file"
   # TODO If file doesn't exist, either log and exit, or throw an error
@@ -111,7 +111,6 @@ when "bibid-file"
   file.each do |line| 
     # Ignore comments and blank lines
     line.chomp!
-    puts line
     next if line.empty? || line[0] == '#'
     bibids << line
   end
