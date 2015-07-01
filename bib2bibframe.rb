@@ -74,6 +74,8 @@ OptionParser.new do |opts|
   end  
   
   opts.on_tail('-h', '--help', 'Show this message') do
+    # TODO Improve output formatting: http://optionparser.rubyforge.org/. Is
+    # this still valid? Can't find class Option.
     puts opts
     exit
   end
