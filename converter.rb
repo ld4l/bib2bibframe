@@ -47,9 +47,10 @@ class Converter
         
     start_time = Time.now
  
-    log "Start conversion: " + start_time.strftime(datetime_format)
-    
+    # Create log and data directories
     create_directories start_time.strftime('%Y-%m-%d-%H%M%S')
+    
+    log "Start conversion: " + start_time.strftime(datetime_format)
         
     if ! @bibids.empty?
       # For now, batch vs single only supported for bibid input
@@ -81,10 +82,8 @@ class Converter
       logdir = @log_destination[:dir]
       if logdir       
           FileUtils.makedirs logdir
-          log "Created log directory #{logdir}."
           @log_destination[:file] = File.join(logdir, datetime + '.log')
-          log "Writing to log file #{@log_destination[:file]}."
-
+          log "Log file location: #{@log_destination[:file]}."
       end
       
       # Create data directories
@@ -296,7 +295,7 @@ class Converter
     
     
     def log message
-                  
+ 
       # Write the log to a file, if specified
       if @log_destination[:file]
         File.open(@log_destination[:file], 'a') do |f|
