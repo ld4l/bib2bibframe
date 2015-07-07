@@ -21,18 +21,27 @@ class Converter
     @bibids = ''
     @marcxml = ''
     # @marc = ''
+    @saxon = ''
+    @zorba = ''
     
-    config.each {|k,v| instance_variable_set("@#{k}",v)}   
-
+    config.each {|k,v| instance_variable_set("@#{k}",v)} 
+    
+    lib = File.join(File.dirname(__FILE__), 'lib')
+    xbin = File.join(lib, 'marc2bibframe', 'xbin')
+    if @xquery == 'saxon'
+      @saxon = File.join(lib,'saxon951', 'saxon9he.jar')
+      @xqy = File.join(xbin, 'saxon.xqy') 
+    else 
+      @zorba = @xquery
+      @xquery = 'zorba'
+      @xqy = File.join(xbin, 'zorba.xqy')  
+    end
+    
     @results = {
       :ids_converted => [],
       :ids_not_found => [],
       :file_count => 0,
     }  
-      
-    @saxon = File.join(File.dirname(__FILE__), 'lib', 'saxon951', 'saxon9he.jar')
-
-    @xquery = File.join(File.dirname(__FILE__), 'lib', 'marc2bibframe', 'xbin', 'saxon.xqy') 
     
     # Non-rdfxml formats require this additional parameter to the LC converter
     @method = (@format == 'ntriples' || @format == 'json') ? "!method=text" : ''
@@ -51,6 +60,7 @@ class Converter
     create_directories start_time.strftime('%Y-%m-%d-%H%M%S')
     
     log "Start conversion: " + start_time.strftime(datetime_format)
+    log "XQuery processor: " + @xquery + '.'
         
     if ! @bibids.empty?
       # For now, batch vs single only supported for bibid input
@@ -100,7 +110,7 @@ class Converter
         FileUtils.makedirs @xmldir unless File.directory? @xmldir
       end
       
-      @rdfdir = File.join(@datadir, 'bibframe', @format)
+      @rdfdir = File.join(@datadir, @xquery, 'bibframe', @format)
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
     end
     
@@ -238,23 +248,27 @@ class Converter
       
       # Preprocess the xml
       # @preprocessor.preprocess xmlfilename
+                
+      if @xquery == 'saxon'
+        # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
+        # syntax, so the usebnode value must be specified. Add the parameter so
+        # we can use either Saxon 9.5 or 9.6.    
+        command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xqy} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=false" 
+   
+        # Not needed because converter already pretty-prints the rdf. 
+        # if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )
+          # # The output from the LC converter contains both single and double 
+          # # quotes. It can't be piped from echo to xmllint, because the argument
+          # # to echo cannot be wrapped in either single or double quotes. Piping
+          # # the converter output directly to xmllint works, since it doesn't have
+          # # to be stored in a variable.
+          # command += " | xmllint --format -"
+        # end
+   
+      else
+        command = "#{@zorba} -i -f -q #{@xqy} -e marcxmluri:=#{xmlfilename} -e serialization:=#{@format} -e baseuri:=#{@baseuri}"
+      end
       
-      
-      # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
-      # syntax, so the usebnode value must be specified. Add the parameter so
-      # we can use either Saxon 9.5 or 9.6.    
-      command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xquery} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=false" 
- 
-      # Not needed because converter already pretty-prints the rdf. 
-      # if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )
-        # # The output from the LC converter contains both single and double 
-        # # quotes. It can't be piped from echo to xmllint, because the argument
-        # # to echo cannot be wrapped in either single or double quotes. Piping
-        # # the converter output directly to xmllint works, since it doesn't have
-        # # to be stored in a variable.
-        # command += " | xmllint --format -"
-      # end
- 
       rdf = `#{command}` 
 
       File.open(rdffile, 'w') { |file| file.write rdf }   

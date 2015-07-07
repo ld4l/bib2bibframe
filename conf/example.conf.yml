@@ -52,6 +52,11 @@ logdir: /usr/local/bib2bibframe-converter/log
 # Pretty-print the marcxml output files. Defaults to false.
 # prettyprint: true
 
-
+# XQuery processor. Possible values are 'saxon' or the absolute or relative 
+# path to the Zorba processor. Optional: commandline argument overrides this 
+# setting. Defaults to saxon.
+# xquery: saxon
+# xquery: ../zorba
+# xquery: /opt/local/bin/zorba
 
 

@@ -20,6 +20,7 @@ CONVERTER_DEFAULTS = {
   :logdir => File.join(Dir.pwd, 'log'),
   :logging => 'file, stdout',
   :prettyprint => false,
+  :xquery => 'saxon'
 }
 
 conf = CONVERTER_DEFAULTS
@@ -71,7 +72,11 @@ OptionParser.new do |opts|
   
   opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the marcxml output. Overrides configuration setting. Defaults to false.') do |arg|
     options[:logdir] = arg
-  end  
+  end
+  
+  opts.on('--xquery', '=[OPTIONAL]', String, 'XQuery processor. Options are saxon, or an absolute or relative path to the zorba processor. Overrides configuration setting. Defaults to saxon.') do |arg|
+    options[:xquery] = arg
+  end
   
   opts.on_tail('-h', '--help', 'Show this message') do
     # TODO Improve output formatting: http://optionparser.rubyforge.org/. Is
