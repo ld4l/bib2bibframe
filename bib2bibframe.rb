@@ -140,15 +140,22 @@ else
   exit
 end
 
-# Convert logging option from string to array
-logging = conf.delete(:logging).split(%r{,\s*})
-log_destination = {}
-if logging.include? 'file'
-  log_destination[:dir] = conf[:logdir]
+# Convert logging options to an array
+log_destination = {:stdout => false, :dir => nil}
+# Yaml converts 'off' to false; don't call split() on false
+if conf[:logging] 
+  logging = conf[:logging].split(%r{,\s*})
+  if logging.include? 'file'
+    log_destination[:dir] = conf[:logdir]
+  end 
+  if logging.include? 'stdout'
+    log_destination[:stdout] = true
+  end 
 end
-log_destination[:stdout] = (logging.include? 'stdout') ? true : false
-conf.delete(:logdir)
 conf[:log_destination] = log_destination
+# Clean up unneeded conf values
+conf.delete(:logging)
+conf.delete(:logdir)
 
 
 # Debugging
