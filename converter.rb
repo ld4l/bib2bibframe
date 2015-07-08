@@ -110,7 +110,8 @@ class Converter
         FileUtils.makedirs @xmldir unless File.directory? @xmldir
       end
       
-      @rdfdir = File.join(@datadir, @xquery, 'bibframe', @format)
+      # @rdfdir = File.join(@datadir, 'bibframe', @xquery, @format)
+      @rdfdir = File.join(@datadir, "bibframe-#{@xquery}-#{@format}")
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
     end
     
