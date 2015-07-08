@@ -96,6 +96,9 @@ conf.merge! conf_file_settings
 # Commandline arguments take precedence.
 conf.merge! options
 
+# Add a final slash if there isn't one
+conf[:baseuri] = File.join conf[:baseuri], ''
+
 if ! conf[:input] 
   puts "ERROR: missing input value. Exiting."
   exit
@@ -153,8 +156,4 @@ conf[:log_destination] = log_destination
 
 converter = Converter.new(conf)
 converter.convert
-
-
-
-
 
