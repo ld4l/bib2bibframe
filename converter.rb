@@ -61,6 +61,7 @@ class Converter
     
     log "Start conversion: " + start_time.strftime(datetime_format)
     log "XQuery processor: " + @xquery + '.'
+    log "RDF format: " + @format + '.'
         
     if ! @bibids.empty?
       # For now, batch vs single only supported for bibid input
