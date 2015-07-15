@@ -132,7 +132,7 @@ when "marc"
   # Input is a path to a MARC file or directory of files 
   # TODO Add support for MARC input
   # conf[:marc] = input[:value]
-  puts "MARC input currently not supported"
+  puts "MARC input currently not supported. Exiting."
   exit
 
 else
