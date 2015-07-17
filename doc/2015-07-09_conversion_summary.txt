@@ -56,6 +56,8 @@ Number of empty files: 1538
 Number of dropped records: 30,760
 Percent dropped records: 4.27%
 
+Total number of triples:  948,971,342
+
 The 36,078 files were broken up into 6 directories to be processed by 6 
 parallel processes. Details on the files and processing time:
 
