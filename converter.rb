@@ -62,6 +62,7 @@ class Converter
     log "Start conversion: " + start_time.strftime(datetime_format)
     log "XQuery processor: " + @xquery + '.'
     log "RDF format: " + @format + '.'
+    log "Use blank nodes: " + (@usebnodes ? "yes" : "no")
         
     if ! @bibids.empty?
       # For now, batch vs single only supported for bibid input
@@ -110,9 +111,11 @@ class Converter
         @xmldir = File.join(@datadir, 'marcxml') 
         FileUtils.makedirs @xmldir unless File.directory? @xmldir
       end
-      
-      # @rdfdir = File.join(@datadir, 'bibframe', @xquery, @format)
-      @rdfdir = File.join(@datadir, "bibframe-#{@xquery}-#{@format}")
+ 
+      bnodes_value = @usebnodes ? 'usebnodes' : 'nobnodes'     
+      # @rdfdir = File.join(@datadir, 'bibframe', @xquery, @format, bnodes_value)
+      @rdfdir = File.join(@datadir, "bibframe-#{@xquery}-#{@format}-#{bnodes_value}")
+      puts @rdfdir
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
     end
     
@@ -215,7 +218,7 @@ class Converter
     def marcxml_records_to_collection marcxml
     
       # Wrap in <collection> tag. Doesn't make any difference in the bibframe of 
-      # a single record, but is needed to process multiple records into a single 
+      # a single record, but is needed to process multiple records into a single bnode
       # file, so just add it generally.
       marcxml = marcxml.gsub(/<\?xml version=['"]1.0['"]\?>/, '')
       marcxml = marcxml.gsub(/<record xmlns=['"]http:\/\/www.loc.gov\/MARC21\/slim['"]>/, '<record>')
@@ -255,7 +258,7 @@ class Converter
         # Saxon 9.6 removed support for defaults in favor of the XQuery 3.0 
         # syntax, so the usebnode value must be specified. Add the parameter so
         # we can use either Saxon 9.5 or 9.6.    
-        command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xqy} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=false" 
+        command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xqy} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=#{@usebnodes}" 
    
         # Not needed because converter already pretty-prints the rdf. 
         # if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )

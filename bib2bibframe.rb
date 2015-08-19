@@ -20,6 +20,7 @@ CONVERTER_DEFAULTS = {
   :logdir => File.join(Dir.pwd, 'log'),
   :logging => 'file, stdout',
   :prettyprint => false,
+  :usebnodes => false,
   :xquery => 'saxon'
 }
 
@@ -73,7 +74,12 @@ OptionParser.new do |opts|
   opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the marcxml output. Overrides configuration setting. Defaults to false.') do |arg|
     options[:logdir] = arg
   end
-  
+
+  # TODO Check to see if this is really what usebnodes does
+  opts.on('--usebnodes', '=[OPTIONAL]', String, 'Passed as argument to converter, specifying whether to generate bnodes in conversion. Values are true or false. Defaults to false.') do |arg|
+    options[:usebnodes] = arg
+  end
+
   opts.on('--xquery', '=[OPTIONAL]', String, 'XQuery processor. Options are saxon, or an absolute or relative path to the zorba processor. Overrides configuration setting. Defaults to saxon.') do |arg|
     options[:xquery] = arg
   end

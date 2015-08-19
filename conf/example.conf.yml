@@ -52,6 +52,10 @@ logdir: /usr/local/bib2bibframe-converter/log
 # Pretty-print the marcxml output files. Defaults to false.
 # prettyprint: true
 
+# Whether the marc2bibframe converter should use bnodes in the output. Optional:
+# commandline overrides this setting. Defaults to false.
+# usebnodes: false
+
 # XQuery processor. Possible values are 'saxon' or the absolute or relative 
 # path to the Zorba processor. Optional: commandline argument overrides this 
 # setting. Defaults to saxon.
