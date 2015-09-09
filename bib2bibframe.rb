@@ -27,7 +27,7 @@ CONVERTER_DEFAULTS = {
 conf = CONVERTER_DEFAULTS
 
 # Default config file
-conf_file = File.join(Dir.pwd, 'conf.yml')
+conf_file = File.join(Dir.pwd, 'conf', 'conf.yml')
 
 # Parse options
 options = {}
@@ -47,7 +47,7 @@ OptionParser.new do |opts|
     options[:catalog] = arg
   end
 
-  opts.on('--conf', '=[OPTIONAL]', String, 'Absolute or relative path to configuration file path. Defaults to conf.yml in the current working directory.') do |arg|
+  opts.on('--conf', '=[OPTIONAL]', String, 'Absolute or relative path to configuration file path. Defaults to conf/conf.yml in current working direcctory.') do |arg|
     conf_file = arg
   end
   
