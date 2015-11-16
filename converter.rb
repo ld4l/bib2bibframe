@@ -37,8 +37,7 @@ class Converter
       @xquery = 'zorba'
       @xqy = File.join(xbin, 'zorba.xqy')  
     end
-    
-    log 'marc2bibframe converter location: ' + @marc2bibframe
+   
     
     @results = {
       :ids_converted => [],
@@ -63,6 +62,7 @@ class Converter
     create_directories start_time.strftime('%Y-%m-%d-%H%M%S')
     
     log "Start conversion: " + start_time.strftime(datetime_format)
+    log 'marc2bibframe converter location: ' + @marc2bibframe
     log "XQuery processor: " + @xquery + '.'
     log "RDF format: " + @format + '.'
     log "Use blank nodes: " + (@usebnodes ? "yes" : "no")
@@ -100,7 +100,7 @@ class Converter
           @log_destination[:file] = File.join(logdir, datetime + '.log')
           log "Log file location: #{@log_destination[:file]}."
       end
-      
+
       # Create data directories
       @datadir = File.join(@datadir, datetime) 
 
@@ -115,10 +115,12 @@ class Converter
         FileUtils.makedirs @xmldir unless File.directory? @xmldir
       end
  
-      bnodes_value = @usebnodes ? 'usebnodes' : 'nobnodes'     
+      bnodes_value = @usebnodes ? 'usebnodes' : 'nobnodes'  
+      version = @marc2bibframe.split('/').last()   
       # @rdfdir = File.join(@datadir, 'bibframe', @xquery, @format, bnodes_value)
-      @rdfdir = File.join(@datadir, "bibframe-#{@xquery}-#{@format}-#{bnodes_value}")
-      puts @rdfdir
+      @rdfdir = File.join(@datadir, "bibframe-#{@xquery}-#{@format}-#{bnodes_value}-#{version}")
+      # puts @rdfdir
+            
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
     end
     

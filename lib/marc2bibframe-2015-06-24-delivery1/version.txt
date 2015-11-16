@@ -1,0 +1,3 @@
+marc2bibframe commit b7d16400 (b7d164009b5b67011ea2ddd39e1dfceeaad058c8)
+June 24, 2015 at 10:57:25 AM EDT
+Version used for Cornell full catalog delivery 1
