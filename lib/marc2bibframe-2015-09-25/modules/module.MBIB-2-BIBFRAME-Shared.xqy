@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-07-23-T17:01:00";
+declare variable $mbshared:last-edit :="2015-09-24-T11:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -512,8 +512,10 @@ declare function mbshared:generate-addl-physical(
         for $i in fn:distinct-values($instance-types1)
                 return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
                 
-return element bf:Instance {element bf:instanceTitle{
-            $instance-types,$instance-types1,
+return element bf:Instance {
+			$instance-types,
+			element bf:instanceTitle{
+            
             element bf:Title{ $instance-title}},
               mbshared:generate-simple-property($d, "instance"),
             $derivedFrom
@@ -555,7 +557,7 @@ declare function mbshared:generate-instance-from260(
                         fn:substring-before(fn:normalize-space($r),"=")
                     else 
                         fn:normalize-space($r)
-    let $edition-instances:= 
+    (:let $edition-instances:= 
     for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
         return 
            (mbshared:generate-instance-from250($e,$workID),
@@ -571,6 +573,7 @@ declare function mbshared:generate-instance-from260(
                 }
             }
             )
+            :)
     let $edition-880:= for $ed in  $d/../marcxml:datafield[@tag = "250"][marcxml:subfield[@code="a"]]
                         return mbshared:generate-880-label($ed,"edition")                
     let $publication:= 
@@ -1193,7 +1196,6 @@ declare function mbshared:generate-26x-pub
 : abc are repeatable!!! each repetition of b or c is another publication; should it be another instance????
 abc and def are parallel, so a and d are treated the same, etc, except the starting property name publication vs manufacture
 :   @param  $d       element is the datafield 260 or 264 
-:   @param  $resource      string is the "work" or "instance"
 :   @return bf:* 	   element()
 
 !!! work on ab abc bibid 468476
@@ -1276,9 +1278,9 @@ declare function mbshared:generate-publication
 	                    for $pl in $d/marcxml:subfield[@code="c"]
 	                    	return 
 	                        if (fn:starts-with($pl,"c")) then				
+				                element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}
+	                        else 				                
 				                element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")}
-	                        else 
-				                element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}		
 		      }
 	        }
 	    else (),    
@@ -1652,41 +1654,6 @@ declare function mbshared:generate-instance-fromISBN(
 		}
     
 };
-(:~
-:   This is the function generates edition instance resources.
-: Makes a duplicate? I don't see anything different from the 260
-:   @param  $d        element is each 250 after the first  
-:   @return bf:* as element()
-:)
-declare function mbshared:generate-instance-from250(
-    $d as element(marcxml:datafield),
-    $workID as xs:string
-    ) as element ()*
-{
-
-    (:get the physical details:)
-    (: We only ask for the first 260 :)
-
-	let $instance := mbshared:generate-instance-from260($d/../marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1], $workID)        
-        
-    let $instanceOf :=  
-        element bf:instanceOf {
-            attribute rdf:resource {$workID}
-        }
-
-    return 
-        element bf:Instance {
-            (if ( fn:exists($instance) ) then
-                (
-                    $instance/@*,
-                    $instance/*    
-                )
-            else 
-                $instanceOf)
-	
-		}
-     
-};
 
 (:~
 :   This is the function generates 856-based instance resources or annotations
@@ -1930,9 +1897,9 @@ declare function mbshared:generate-holdings-from-hrecords(
 
 
 for $r in $collection/marcxml:record[2](:[fn:string(@type)="Holdings"]:)
-    return element bf:heldItem { element bf:HeldItem {
-            
-            mbshared:generate-simple-property($r/marcxml:datafield,"holdings")
+    return element bf:heldItem { element bf:HeldItem { 
+            for $d in $r/marcxml:datafield
+                return    mbshared:generate-simple-property($d,"holdings")
          }
          }
 
@@ -2005,13 +1972,13 @@ let $d852:=
     
 return 
         if (fn:not($hld) and ($shelfmark or $d852  )) then        
-            element bf:heldItem{   
-                element bf:HeldItem {                   
+            element bf:heldItem{  
+                element bf:HeldItem {       
                    (:this is for matching later:)
                     element bf:label{fn:string($shelfmark[1])},
          	    $shelfmark,
          	    $custodialHistory,
-         	    $d852         	     	
+         	    $d852         	   	
                 }
             }
             
@@ -2927,7 +2894,11 @@ declare function mbshared:generate-complex-notes(
 :       7) Concatenate and normalize.  Normalization includes forcing the string to be all lower 
 :           case, removing spaces, and removing all special characters.
 : 
-
+:           2015 09 23 lc Merge decisions  changing names to 1xx if present, (if add 7xx back, suppress $2,7xx with $t)
+:           also suppress object type since matching to name/title for now (no resource types in them)
+:           however, last pass auth2bibframe 20150723 boilerplated "work" in  there, so I'm leaving it in here
+:           if language in 008 is eng, drop it, since name/titles are defaulting to eng
+:
 :   @param  $marcxml        element is the marcxml:datafield  
 :   @return bf:authorizedAccessPoint
 :)
@@ -2958,14 +2929,14 @@ let $hashableTitle :=
                 return $tstr
         let $t := marc2bfutils:clean-title-string($t)    
         return $t
-    let $hashableNames := 
+    (:let $hashableNames := 
         (
-            let $n := (:fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " "):)
-            fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))] , " ")
-            return marc2bfutils:clean-name-string($n),
+            let $n := 
+                   fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))] , " ")
+                        return marc2bfutils:clean-name-string($n),
             
-            let $n :=(: fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " "):)
-                    fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))], " ")
+            let $n :=
+                    fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")][fn:not(marcxml:subfield[@code="t"])]/marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))], " ")
             return marc2bfutils:clean-name-string($n)
         )
     let $hashableNames := 
@@ -2973,9 +2944,16 @@ let $hashableTitle :=
         order by $n
         return $n
     let $hashableNames := fn:string-join($hashableNames, " ")
+    :) 
+    let $hashableNames := for $n in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
+                              return marc2bfutils:clean-name-string(fn:string-join($n/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)") )] , " "))
+            
     let $hashableLang := fn:normalize-space(fn:substring(fn:string($marcxml/marcxml:controlfield[@tag='008']), 36, 3))
-    (:let $hashableTypes := fn:concat($mainType, fn:string-join($types, "")):)
-    let $hashableTypes := fn:concat($mainType, $types[1])
+    
+    let $hashableLang:= if ($hashableLang="eng") then  () else $hashableLang
+    
+    (:let $hashableTypes := fn:concat($mainType, $types[1]):)
+    let $hashableTypes := $mainType
     
     let $hashableStr := fn:concat($hashableNames, " / ", $hashableTitle, " / ", $hashableLang, " / ", $hashableTypes)
     let $hashableStr := fn:replace($hashableStr, "!|\||@|#|\$|%|\^|\*|\(|\)|\{|\}|\[|\]|:|;|'|&amp;quot;|&amp;|<|>|,|\.|\?|~|`|\+|=|_|\-|/|\\| ", "")
@@ -2986,6 +2964,7 @@ return
             attribute xml:lang { "x-bf-hash"},
             $hashableStr
         }
+        
 };
 (:~
 :   This function generates a subject.
@@ -3255,7 +3234,7 @@ declare function mbshared:get-name(
         for $role in $d/marcxml:subfield[@code = "4" or @code = "e"]
           return 
             if (fn:string($role/@code) = "4" and fn:string($role)!="") then            
-                marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($role)),".")
+                fn:string($role)
             else 
                 marc2bfutils:generate-role-code(marc2bfutils:clean-string(fn:string($role))) 
     
@@ -3395,9 +3374,11 @@ declare function mbshared:get-521audience(
     $tag as element(marcxml:datafield)
     ) as item()*
 {
-element bf:intendedAudience {
+for $sf in $tag/marcxml:subfield[@code="a"]
+return
+    element bf:intendedAudience {
 		  element bf:IntendedAudience {
-		      	   element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])},
+		      	   element bf:audience {fn:string($sf)},
 			     if ($tag/marcxml:subfield[@code="b"]) then  element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])} else ()	
 	       }
 	}
@@ -3724,10 +3705,11 @@ declare function mbshared:generate-simple-property(
         if ($d/@tag="511" and $d/@ind1="0") then 
             "" 
         else
-            fn:string($node/@startwith) 
+             fn:string($node/@startwith)
+            
  
-    return    
-      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
+    return          
+       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
         let $text:= if (fn:string-length($return-codes) > 1) then 
                         let $stringjoin:= if ($node/@stringjoin) then fn:string($node/@stringjoin) else " "
                         return   element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
@@ -3790,7 +3772,7 @@ declare function mbshared:generate-simple-property(
      
      else (:no matching nodes for this datafield:)
         ()      
-      
+     
 };
 (:~
 :   This is the function generates a literal property or simple uri from a string, using the nodes xml
@@ -4078,8 +4060,8 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                      		             let $ddc:=fn:normalize-space($this-tag/marcxml:subfield[@code="a"])
                      		             let $ddc:=fn:replace($ddc,"^(.+) (.+)$", "$1") 
                      		             return 
-                     		             (:attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])),"/about")}:)
-                     		                  attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:encode-for-uri($ddc),"/about")}
+                     		             (:attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])))}:)
+                     		                  attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:encode-for-uri($ddc))}
                      		    else element bf:Classification {
                                         element bf:classificationNumber {fn:string($cl)},
                                 if ($this-tag[@tag="086"] and $this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then

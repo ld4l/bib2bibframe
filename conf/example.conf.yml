@@ -49,6 +49,11 @@ logging: file, stdout
 # overrides this setting. In the absence of both, defaults to ./log.
 logdir: /usr/local/bib2bibframe-converter/log
 
+# Absolute or relative path to marc2bibframe converter. Optional: commandline 
+# overrides this setting. Defaults to lib/marc2bibframe in the application
+# directory
+marc2bibframe: /Users/rjy7/Workspace/bib2bibframe/lib/marc2bibframe-2015-11-09
+
 # Pretty-print the marcxml output files. Defaults to false.
 # prettyprint: true
 

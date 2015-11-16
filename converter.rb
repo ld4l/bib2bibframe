@@ -17,8 +17,9 @@ class Converter
   # request
   def initialize config
     
-    # Initialize instance variables that are optional config hash
+    # Initialize instance variables that are optional in config hash
     @bibids = ''
+    @marc2bibframe = ''
     @marcxml = ''
     # @marc = ''
     @saxon = ''
@@ -27,7 +28,7 @@ class Converter
     config.each {|k,v| instance_variable_set("@#{k}",v)} 
     
     lib = File.join(File.dirname(__FILE__), 'lib')
-    xbin = File.join(lib, 'marc2bibframe', 'xbin')
+    xbin = File.join(@marc2bibframe, 'xbin')
     if @xquery == 'saxon'
       @saxon = File.join(lib,'saxon951', 'saxon9he.jar')
       @xqy = File.join(xbin, 'saxon.xqy') 
@@ -36,6 +37,8 @@ class Converter
       @xquery = 'zorba'
       @xqy = File.join(xbin, 'zorba.xqy')  
     end
+    
+    log 'marc2bibframe converter location: ' + @marc2bibframe
     
     @results = {
       :ids_converted => [],

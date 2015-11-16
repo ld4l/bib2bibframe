@@ -19,10 +19,12 @@ CONVERTER_DEFAULTS = {
   :format => 'rdfxml',  
   :logdir => File.join(Dir.pwd, 'log'),
   :logging => 'file, stdout',
+  :marc2bibframe => File.join('Users', 'rjy7', 'Workspace', 'bib2bibframe', 'lib', 'marc2bibframe'),
   :prettyprint => false,
   :usebnodes => false,
   :xquery => 'saxon'
 }
+
 
 conf = CONVERTER_DEFAULTS
 
@@ -47,10 +49,10 @@ OptionParser.new do |opts|
     options[:catalog] = arg
   end
 
-  opts.on('--conf', '=[OPTIONAL]', String, 'Absolute or relative path to configuration file path. Defaults to conf/conf.yml in current working direcctory.') do |arg|
+  opts.on('--conf', '=[OPTIONAL]', String, 'Absolute or relative path to configuration file. Defaults to conf/conf.yml in current working directory.') do |arg|
     conf_file = arg
   end
-  
+    
   opts.on('--datadir', '=[OPTIONAL]', String, 'Absolute or relative path to directory for storing data files. Overrides configuration setting. Defaults to data subdirectory of current directory.') do |arg|
     options[:datadir] = arg
   end 
@@ -70,7 +72,11 @@ OptionParser.new do |opts|
   opts.on('--logging', '=[OPTIONAL]', String, 'Logging options: off, file, stdout, or both file and stdout. Overrides configuration setting. Defaults to both file and stdout.') do |arg|
     options[:logging] = arg
   end  
-  
+ 
+  opts.on('--marc2bibframe', '=[OPTIONAL]', String, 'Absolute or relative path to marc2bibframe converter. Defaults to lib/marc2bibframe in the application directory.') do |arg|
+    options[:marc2bibframe] = arg
+  end
+   
   opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the marcxml output. Overrides configuration setting. Defaults to false.') do |arg|
     options[:logdir] = arg
   end
