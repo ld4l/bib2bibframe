@@ -19,7 +19,6 @@ class Converter
     
     # Initialize instance variables that are optional in config hash
     @bibids = ''
-    @marc2bibframe = ''
     @marcxml = ''
     # @marc = ''
     @saxon = ''
@@ -29,6 +28,7 @@ class Converter
     
     lib = File.join(File.dirname(__FILE__), 'lib')
     xbin = File.join(@marc2bibframe, 'xbin')
+    # puts xbin
     if @xquery == 'saxon'
       @saxon = File.join(lib,'saxon951', 'saxon9he.jar')
       @xqy = File.join(xbin, 'saxon.xqy') 
@@ -116,9 +116,9 @@ class Converter
       end
  
       bnodes_value = @usebnodes ? 'usebnodes' : 'nobnodes'  
-      version = @marc2bibframe.split('/').last()   
+      marc2bibframe_version = @marc2bibframe.split('/').last()   
       # @rdfdir = File.join(@datadir, 'bibframe', @xquery, @format, bnodes_value)
-      @rdfdir = File.join(@datadir, "bibframe-#{@xquery}-#{@format}-#{bnodes_value}-#{version}")
+      @rdfdir = File.join(@datadir, "bibframe_#{@format}_#{marc2bibframe_version}_#{bnodes_value}_#{@xquery}")
       # puts @rdfdir
             
       FileUtils.makedirs @rdfdir unless File.directory? @rdfdir
