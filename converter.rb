@@ -264,7 +264,7 @@ class Converter
         # syntax, so the usebnode value must be specified. Add the parameter so
         # we can use either Saxon 9.5 or 9.6.    
         command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xqy} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=#{@usebnodes}" 
-   
+        log command
         # Not needed because converter already pretty-prints the rdf. 
         # if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )
           # # The output from the LC converter contains both single and double 
