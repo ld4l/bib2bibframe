@@ -39,19 +39,20 @@ datadir: /usr/local/bib2bibframe-converter/data
 # input: marcxml:/usr/local/bib2bibframe/marcxml
 # input: marcxml:/usr/local/bib2bibframe/marcxml/12398.xml
 
-# Logging options: off, file, stdout, or both file and stdout. Optional: 
-# commandline overrides this setting. Defaults to both file and stdout.
-# logging: off
-# logging: stdout
-logging: file, stdout
-
 # Absolute or relative path to log directory. Optional: commandline argument  
 # overrides this setting. In the absence of both, defaults to ./log.
 logdir: /usr/local/bib2bibframe-converter/log
 
+# Logging options: off, file, stdout, or both file and stdout. Optional: 
+# commandline overrides this setting. Defaults to both file and stdout.
+# logging: off
+# logging: file
+# logging: stdout
+logging: file, stdout
+
 # Absolute or relative path to marc2bibframe converter. Optional: commandline 
-# overrides this setting. Defaults to lib/marc2bibframe in the application
-# directory
+# argument overrides this setting. Defaults to lib/marc2bibframe in the 
+# application directory
 marc2bibframe: /Users/rjy7/Workspace/bib2bibframe/lib/marc2bibframe-2015-11-09
 
 # Pretty-print the marcxml output files. Defaults to false.
@@ -67,5 +68,10 @@ marc2bibframe: /Users/rjy7/Workspace/bib2bibframe/lib/marc2bibframe-2015-11-09
 # xquery: saxon
 # xquery: ../zorba
 # xquery: /opt/local/bin/zorba
+
+# Verbose output to stdout. Applies only if stdout is included in the logging
+# option above. Optional: commandline argument overrides this setting. Defaults 
+# to false. 
+# verbose: true
 
 

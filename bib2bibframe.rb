@@ -22,6 +22,7 @@ CONVERTER_DEFAULTS = {
   :marc2bibframe => File.join('Users', 'rjy7', 'Workspace', 'bib2bibframe', 'lib', 'marc2bibframe'),
   :prettyprint => false,
   :usebnodes => false,
+  :verbose => false,
   :xquery => 'saxon'
 }
 
@@ -78,12 +79,16 @@ OptionParser.new do |opts|
   end
    
   opts.on('--prettyprint', '=[OPTIONAL]', String, 'Pretty-print the marcxml output. Overrides configuration setting. Defaults to false.') do |arg|
-    options[:logdir] = arg
+    options[:prettyprint] = arg
   end
 
   # TODO Check to see if this is really what usebnodes does
   opts.on('--usebnodes', '=[OPTIONAL]', String, 'Passed as argument to converter, specifying whether to generate bnodes in conversion. Values are true or false. Defaults to false.') do |arg|
     options[:usebnodes] = arg
+  end
+  
+  opts.on('--verbose', '=[OPTIONAL]', String, 'Verbose logging. Verbose messages are logged only to console, not to log file. Overrides configuration setting. Defaults to false.') do |arg|
+    options[:verbose] = arg
   end
 
   opts.on('--xquery', '=[OPTIONAL]', String, 'XQuery processor. Options are saxon, or an absolute or relative path to the zorba processor. Overrides configuration setting. Defaults to saxon.') do |arg|
@@ -107,9 +112,6 @@ conf.merge! conf_file_settings
 
 # Commandline arguments take precedence.
 conf.merge! options
-
-# Add a final slash if there isn't one
-conf[:baseuri] = File.join conf[:baseuri], ''
 
 if ! conf[:input] 
   puts "ERROR: missing input value. Exiting."
@@ -155,6 +157,7 @@ end
 
 # Convert logging options to an array
 log_destination = {:stdout => false, :dir => nil}
+
 # Yaml converts 'off' to false; don't call split() on false
 if conf[:logging] 
   logging = conf[:logging].split(%r{,\s*})
@@ -165,10 +168,17 @@ if conf[:logging]
     log_destination[:stdout] = true
   end 
 end
+
 conf[:log_destination] = log_destination
+
 # Clean up unneeded conf values
 conf.delete(:logging)
 conf.delete(:logdir)
+
+# Verbose logging is only to stdout, so add it only if log destinations include
+# stdout
+conf[:verbose] = 
+  conf[:log_destination][:stdout] && conf[:verbose] ? true : false
 
 # Add to conf so can be logged
 conf[:conf_file] = File.join(Dir.pwd, conf_file)

@@ -68,6 +68,7 @@ class Converter
     log "Batch processing: " + (@batch ? "yes" : "no")
     log "RDF format: " + @format
     log "Use blank nodes: " + (@usebnodes ? "yes" : "no")
+    log "Verbose logging to stdout: " + (@verbose ? "on" : "off")
         
     if ! @bibids.empty?
       # For now, batch vs single only supported for bibid input
@@ -179,7 +180,9 @@ class Converter
 
       # Concatenate the marcxml for each id
       @bibids.each do |id|
-        # puts "processing id #{id}"
+        if @verbose
+          puts "Getting marcxml for #{id}"
+        end
         marcxml << get_marcxml(id)
       end
           
@@ -231,7 +234,7 @@ class Converter
       marcxml = marcxml.gsub(/<\?xml version=['"]1.0['"]\?>/, '')
       marcxml = marcxml.gsub(/<record xmlns=['"]http:\/\/www.loc.gov\/MARC21\/slim['"]>/, '<record>')
       marcxml = 
-        "<?xml version='1.0' encoding='UTF-8'?><collection xmlns='http://www.loc.gov/MARC21/slim'>" + marcxml + '</collection>'
+        "<?xml version='1.0' encoding='UTF-8'?><collection xmlns='http://www.loc.gov/MARC21/slim'>" + marcxml + "</collection>\n"
   
       # Exceeds xmllint's capacity when large number of records are processed
       # in batch. Apply to individual records instead.
@@ -253,9 +256,6 @@ class Converter
     # Convert marcxml for the id to bibframe rdf and write to file
     
     def marcxml_to_bibframe xmlfilename
-      
-      # Might be nice to count records in the file for reporting, but may be
-      # too time-consuming on large files.
 
       rdffile = File.join(@rdfdir, File.basename(xmlfilename, FILE_EXTENSIONS['marcxml']) + FILE_EXTENSIONS[@format])
       
@@ -267,7 +267,6 @@ class Converter
         # syntax, so the usebnode value must be specified. Add the parameter so
         # we can use either Saxon 9.5 or 9.6.    
         command = "java -cp #{@saxon} net.sf.saxon.Query #{@method} #{@xqy} marcxmluri=#{xmlfilename} baseuri=#{@baseuri} serialization=#{@format} usebnodes=#{@usebnodes}" 
-        log command
         # Not needed because converter already pretty-prints the rdf. 
         # if @prettyprint and ( @format == 'rdfxml' or @format == 'rdfxml-raw' )
           # # The output from the LC converter contains both single and double 
@@ -281,6 +280,8 @@ class Converter
       else
         command = "#{@zorba} -i -f -q #{@xqy} -e marcxmluri:=#{xmlfilename} -e serialization:=#{@format} -e baseuri:=#{@baseuri}"
       end
+      
+      log command
       
       rdf = `#{command}` 
 
