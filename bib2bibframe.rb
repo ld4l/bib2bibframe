@@ -129,6 +129,7 @@ when "bibid-file"
   file = File.new input[:value]
   bibids = []
   file.each do |line| 
+    # puts "bibid = #{line}"
     # Ignore comments and blank lines
     line.chomp!
     next if line.empty? || line[0] == '#'
@@ -169,6 +170,8 @@ conf[:log_destination] = log_destination
 conf.delete(:logging)
 conf.delete(:logdir)
 
+# Add to conf so can be logged
+conf[:conf_file] = File.join(Dir.pwd, conf_file)
 
 # Debugging
 # conf.each { |k,v| puts "#{k}: #{v}" }

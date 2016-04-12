@@ -62,9 +62,11 @@ class Converter
     create_directories start_time.strftime('%Y-%m-%d-%H%M%S')
     
     log "Start conversion: " + start_time.strftime(datetime_format)
-    log 'marc2bibframe converter location: ' + @marc2bibframe
-    log "XQuery processor: " + @xquery + '.'
-    log "RDF format: " + @format + '.'
+    log 'Config file: ' + @conf_file
+    log 'marc2bibframe converter: ' + @marc2bibframe
+    log "XQuery processor: " + @xquery
+    log "Batch processing: " + (@batch ? "yes" : "no")
+    log "RDF format: " + @format
     log "Use blank nodes: " + (@usebnodes ? "yes" : "no")
         
     if ! @bibids.empty?
@@ -177,6 +179,7 @@ class Converter
 
       # Concatenate the marcxml for each id
       @bibids.each do |id|
+        # puts "processing id #{id}"
         marcxml << get_marcxml(id)
       end
           
