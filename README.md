@@ -1,4 +1,4 @@
-# bib2bibframe-converter #
+# bib2bibframe #
 
 ## Overview ##
 
