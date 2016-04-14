@@ -15,9 +15,9 @@ batch: false
 # doesn't support this.
 catalog: http://search.library.cornell.edu
 
-# Absolute or relative path to which data is written. Optional: commandline 
+# Absolute or relative path to the output directory. Optional: commandline 
 # argument overrides this setting. In the absence of both, defaults to ./data.
-datadir: /usr/local/bib2bibframe-converter/data
+outdir: /usr/local/bib2bibframe-converter/data
 
 # Serialization format. Optional: may be overridden by a commandline argument.
 # Defaults to rdfxml.

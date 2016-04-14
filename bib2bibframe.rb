@@ -4,14 +4,17 @@
 # supported)
 
 require_relative 'converter'
+require_relative 'logger'
 require 'optparse'
 require 'yaml'
-  
+
+start_time = Time.now
+
 # Default converter config values, if not specified in config file or on 
 # commandline. (Not all settings have defaults - e.g., bibids and catalog.)
 CONVERTER_DEFAULTS = {
   :batch => false,
-  :datadir => File.join(Dir.pwd, 'data'),
+  :outdir => File.join(Dir.pwd, 'data'),
   # Serializations supported by bibframe converter: 
   # rdfxml: (default) flattened RDF/XML, everything has an identifier
   # rdfxml-raw: verbose, cascaded output
@@ -54,8 +57,8 @@ OptionParser.new do |opts|
     conf_file = arg
   end
     
-  opts.on('--datadir', '=[OPTIONAL]', String, 'Absolute or relative path to directory for storing data files. Overrides configuration setting. Defaults to data subdirectory of current directory.') do |arg|
-    options[:datadir] = arg
+  opts.on('--outdir', '=[OPTIONAL]', String, 'Absolute or relative path to directory for storing data files. Overrides configuration setting. Defaults to data subdirectory of current directory.') do |arg|
+    options[:outdir] = arg
   end 
   
   opts.on('--format', '=[OPTIONAL]', String, 'RDF serialization. Overrides configuration setting. Options: rdfxml, rdfxml-raw, ntriples, json. Defaults to rdfxml.') do |arg|
@@ -113,14 +116,58 @@ conf.merge! conf_file_settings
 # Commandline arguments take precedence.
 conf.merge! options
 
+# conf.each { |k,v| puts "#{k}: #{v}" }
+
+# Create logger
+log_conf = Hash.new
+array = [:logdir, :logging, :verbose]
+array.each { |key| log_conf[key] = conf.delete(key) }
+log_conf[:start_time] = start_time
+# log_conf.each { |k,v| puts "#{k}: #{v}" }
+logger = Logger.new(log_conf)
+
 if ! conf[:input] 
-  puts "ERROR: missing input value. Exiting."
+  log_error "ERROR: missing input value. Exiting."
   exit
 end
 
-values = conf.delete(:input).partition ":"
-keys = [:type, :sep, :value]
-input = Hash[keys.zip values]
+conf[:outdir] = File.join(conf[:outdir], logger.formatted_start_time) 
+
+log_destinations = logger.log_destinations
+start_log = [
+  'Start conversion at ' + logger.formatted_datetime(start_time),
+  'Using config file: ' + conf_file,
+  'Selected configuration (from commandline options, conf file, defaults):',     
+  'Log file: ' + log_destinations[:file],
+  'Log to stdout: ' + (log_destinations[:stdout] ? 'yes' : 'no'),
+  'Input: ' + conf[:input],
+  'Output directory: ' + conf[:outdir],
+  'Base URI: ' + conf[:baseuri],
+  'Catalog: ' + conf[:catalog],
+  'marc2bibframe converter: ' + conf[:marc2bibframe],
+  'XQuery processor: ' + conf[:xquery],
+  'RDF format: ' + conf[:format],
+  'Use blank nodes: ' + (conf[:usebnodes] ? 'yes' : 'no'),
+  'Batch processing: ' + (conf[:batch] ? 'yes' : 'no'),
+  'Verbose logging to stdout: ' + (logger.verbose? ? 'on' : 'off')
+]  
+
+logger.log start_log
+
+conf[:logger] = logger
+ 
+input = {}
+
+if conf[:input].include? ":"
+  input_values = conf_input.split ":"
+  input[:type] = input_values[0]
+  input[:value] = input_values[1]
+else 
+  input[:type] ='bibids'
+  input[:value] = conf[:input]
+end
+
+conf.delete :input
 
 case input[:type]
 when "bibids"
@@ -147,41 +194,14 @@ when "marc"
   # Input is a path to a MARC file or directory of files 
   # TODO Add support for MARC input
   # conf[:marc] = input[:value]
-  puts "MARC input currently not supported. Exiting."
+  logger.log_error "MARC input currently not supported. Exiting."
   exit
 
 else
-  puts "ERROR: invalid input value. Exiting."
+  logger.log_error "ERROR: invalid input value. Exiting."
   exit
 end
 
-# Convert logging options to an array
-log_destination = {:stdout => false, :dir => nil}
-
-# Yaml converts 'off' to false; don't call split() on false
-if conf[:logging] 
-  logging = conf[:logging].split(%r{,\s*})
-  if logging.include? 'file'
-    log_destination[:dir] = conf[:logdir]
-  end 
-  if logging.include? 'stdout'
-    log_destination[:stdout] = true
-  end 
-end
-
-conf[:log_destination] = log_destination
-
-# Clean up unneeded conf values
-conf.delete(:logging)
-conf.delete(:logdir)
-
-# Verbose logging is only to stdout, so add it only if log destinations include
-# stdout
-conf[:verbose] = 
-  conf[:log_destination][:stdout] && conf[:verbose] ? true : false
-
-# Add to conf so can be logged
-conf[:conf_file] = File.join(Dir.pwd, conf_file)
 
 # Debugging
 # conf.each { |k,v| puts "#{k}: #{v}" }
@@ -189,3 +209,11 @@ conf[:conf_file] = File.join(Dir.pwd, conf_file)
 converter = Converter.new(conf)
 converter.convert
 
+end_time = Time.now
+end_time = Time.now
+duration = end_time - start_time
+
+logger.log [
+  "End conversion: " + logger.formatted_datetime(end_time),
+  "Processing time: " + logger.seconds_to_time(duration)
+]
