@@ -159,7 +159,7 @@ conf[:logger] = logger
 input = {}
 
 if conf[:input].include? ":"
-  input_values = conf_input.split ":"
+  input_values = conf[:input].split ":"
   input[:type] = input_values[0]
   input[:value] = input_values[1]
 else 
