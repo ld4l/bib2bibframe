@@ -65,6 +65,7 @@ OptionParser.new do |opts|
     options[:format] = arg
   end   
   
+  # TODO - allow a directory of files containing bibids
   opts.on('--input', '=[OPTIONAL]', String, 'Input. Options are: (1) The string "bibids:" followed by a comma-separated list of bib ids. (2) The string "bibid-file:" followed by the absolute or relative path to a file containing a newline-delimited list of bib ids; the file may contain comment lines prefixed with #. (3) The string "marc:" followed by the absolute or relative path to a single MARC file or a directory of MARC files (extension ".mrc"). (4) The string "marcxml:" followed by the absolute or relative path to a single MARCXML file or a directory of MARCXML files (extension ".xml").') do |arg|
     options[:input] = arg
   end
